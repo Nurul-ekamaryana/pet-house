@@ -2,6 +2,8 @@ class Transaksi {
   final int nomor_unik;
   final String nama_pelanggan;
   final String nama_produk;
+  final String ciri_has;
+  final String jenis;
   final double harga_produk;
   final double uang_bayar;
   final double uang_kembali;
@@ -9,8 +11,10 @@ class Transaksi {
   Transaksi({
     required this.nomor_unik,
     required this.nama_pelanggan,
-    required this.nama_produk,
     required this.harga_produk,
+    required this.nama_produk,
+    required this.ciri_has,
+    required this.jenis,
     required this.uang_bayar,
     required this.uang_kembali,
     required String creatad_at,
@@ -22,6 +26,8 @@ class Transaksi {
       'nomor_unik': nomor_unik,
       'nama_pelanggan': nama_pelanggan,
       'nama_produk': nama_produk,
+      'ciri_has': ciri_has,
+      'jenis': jenis,
       'harga_produk': harga_produk,
       'uang_bayar': uang_bayar,
       'uang_kembali': uang_kembali,

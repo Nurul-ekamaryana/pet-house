@@ -20,7 +20,7 @@ class Screenpage extends StatelessWidget {
             children: [
               Image(
                 image: AssetImage('images/4.png'),
-                height: 300,
+                height: 150,
               ),
               SizedBox(height: 16),
               // Text(

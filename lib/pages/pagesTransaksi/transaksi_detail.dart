@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_petshop/controller/logController.dart';
 import 'package:e_petshop/controller/transaksiController.dart';
-import 'package:e_petshop/pages/pagesTransaksi/adop.dart';
+import 'package:e_petshop/pdf/pdf.dart';
 import 'package:e_petshop/theme/color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -21,6 +23,77 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
   String _jenis = '';
   double _uangKembali = 0.0;
   final LogController logController = LogController();
+  final EmsPdfService emspdfservice = EmsPdfService();
+  List _orders = [];
+  DateTime _currentDate = DateTime.now();
+
+  Future<void> readJson() async {
+    final String response =
+        await rootBundle.loadString("assets/orders.json");
+    final data = await json.decode(response);
+    setState(() {
+      _orders = data['records'];
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    readJson();
+    fetchProducts();
+    final Map<String, dynamic>? args = Get.arguments;
+    _selectedProduct = args?['nama_produk'] ?? null;
+    if (_selectedProduct != null) {
+      fetchBookPrice(_selectedProduct);
+    }
+    _updateUangKembali(); // Call _updateUangKembali in initState
+  }
+
+  Future<void> fetchProducts() async {
+    QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('products').get();
+
+    setState(() {
+      produkList = querySnapshot.docs
+          .map((doc) => doc['nama_produk'])
+          .toList()
+          .cast<String>();
+    });
+  }
+
+  Future<void> fetchBookPrice(String? selectedProduk) async {
+  if (selectedProduk != null) {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('products')
+        .where('nama_produk', isEqualTo: selectedProduk)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      double hargaProduk = querySnapshot.docs.first['harga_produk'];
+      String jenis = querySnapshot.docs.first['jenis'];
+      String cirihas = querySnapshot.docs.first['ciri_has'];
+
+      setState(() {
+        _hargaProduk = hargaProduk;
+        _cirihas = cirihas;
+        _jenis = jenis;
+        // Update the _hargaProdukController text here
+        _hargaProdukController.text = currencyFormatter.format(hargaProduk);
+         _jenisController.text = _jenis;
+          _cirihasController.text = _cirihas;
+      });
+    }
+  } else {
+    setState(() {
+     _hargaProduk = 0.0;
+        _hargaProdukController.text = '';
+        _uangKembali = 0.0;
+        _jenisController.text = '';
+        _cirihasController.text = '';
+    });
+  }
+}
+
 
   final TextEditingController _namaPembeliController = TextEditingController();
   final TextEditingController _uangBayarController = TextEditingController();
@@ -66,7 +139,7 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
     }
   }
 
-  // Metode untuk mengupdate uang kembali
+  // Method to update the change in the returned amount
   void _updateUangKembali() {
     double uangBayar = double.tryParse(
           _uangBayarController.text.replaceAll(RegExp('[^0-9]'), ''),
@@ -78,71 +151,14 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
       _uangKembali = uangKembali;
     });
   }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchProducts();
-    final Map<String, dynamic>? args = Get.arguments;
-    _selectedProduct = args?['nama_produk'] ?? null;
-    if (_selectedProduct != null) {
-      fetchBookPrice(_selectedProduct);
-    }
-
-    // Panggil _updateUangKembali di initState
-    _updateUangKembali();
-  }
-
-  Future<void> fetchProducts() async {
-    QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('products').get();
-
-    setState(() {
-      produkList = querySnapshot.docs
-          .map((doc) => doc['nama_produk'])
-          .toList()
-          .cast<String>();
-    });
-  }
-
-  Future<void> fetchBookPrice(String? selectedBook) async {
-    if (selectedBook != null) {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('products')
-          .where('nama_produk', isEqualTo: selectedBook)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        double hargaProduk = querySnapshot.docs.first['harga_produk'];
-        String jenis = querySnapshot.docs.first['jenis'];
-        String cirihas = querySnapshot.docs.first['ciri_has'];
-
-        setState(() {
-          _hargaProduk = hargaProduk;
-          _cirihas = cirihas;
-          _jenis = jenis;
-          _jenisController.text = _jenis;
-          _cirihasController.text = _cirihas;
-          _hargaProdukController.text = currencyFormatter.format(hargaProduk);
-        });
-      }
-    } else {
-      setState(() {
-        _hargaProduk = 0.0;
-        _hargaProdukController.text = '';
-        _uangKembali = 0.0;
-        _jenisController.text = '';
-        _cirihasController.text = '';
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic>? args = Get.arguments;
     final String id = args?['id'] ?? '';
     final String namaPembeli = args?['nama_pelanggan'] ?? '';
     final double uangBayar = args?['uang_bayar'] ?? 0.0;
+    final double uangKembali = args?['uang_kembali'] ?? 0.0;
+    final double nounik = args?['nomor_unik'] ?? 0.0;
 
     _namaPembeliController.text = namaPembeli;
     _uangBayarController.text = uangBayar.toStringAsFixed(0);
@@ -392,74 +408,86 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                     ),
                   ),
                   ElevatedButton(
-  onPressed: () async {
-    bool confirmDelete = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Konfirmasi"),
-          content: Text("Apakah Anda yakin ingin menghapus produk ini?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true); // User confirms deletion
-              },
-              child: Text("Ya"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false); // User cancels deletion
-              },
-              child: Text("Tidak"),
-            ),
-          ],
-        );
-      },
-    );
+                    style: ElevatedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      backgroundColor: Colors.amber,
+                    ),
+                   onPressed: () async {
+                        try {
+                              String formattedDate = DateFormat('dd-MM-yyyy').format(_currentDate);
+                          final data = await emspdfservice.generateEMSPDF(
+                            nounik.toString(),
+                            formattedDate,
+                            _namaPembeliController.text,
+                            _selectedProduct.toString(),
+                            _hargaProduk.toString(),
+                            uangBayar.toString(),
+                            uangKembali.toString()
+                          );
 
-    if (confirmDelete == true) {
-      bool success = await _transaksiController.deleteTransaksi(id);
-      if (success) {
-        _transaksiController.shouldUpdate.value = true;
-        Get.back(); // Kembali ke halaman produk
-        Get.snackbar('Success', 'Berhasil delete');
-      } else {
-        Get.snackbar('Failed', 'Failed to delete transaction');
-      }
-    }
-  },
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.red,
-  ),
-  child: Text(
-    "Hapus",
-    style: TextStyle(color: Colors.white),
-  ),
-),
+                          await emspdfservice.savePdfFile(
+                              "Invoice_Transactions", data);
 
-                  // ElevatedButton(
-                  //   style: ElevatedButton.styleFrom(
-                  //     padding:
-                  //         EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  //     backgroundColor: Color.fromARGB(255, 143, 141, 27),
-                  //   ),
-                  //   onPressed: () async {
-                  //     Get.to(() => Adop(
-                  //           nama_pelanggan: namaPembeli,
-                  //           nama_produk: _selectedProduct!,
-                  //           harga_produk: _hargaProduk,
-                  //           uang_bayar: uangBayar,
-                  //           uang_kembali: _uangKembali,
-                  //         ));
-                  //   },
-                  //   child: Text(
-                  //     'Laporan Adop',
-                  //     style: TextStyle(
-                  //       color: Colors.white,
-                  //       fontFamily: 'Poppins',
-                  //     ),
-                  //   ),
-                  // ),
+                          Get.snackbar('Success', 'PDF saved successfully!');
+                        } catch (e) {
+                          print('Error: $e');
+                          Get.snackbar('Error', 'Failed to save PDF');
+                        }
+                      },
+                    child: Text(
+                      'print',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                  onPressed: () async {
+                    bool confirmDelete = await showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Konfirmasi"),
+                          content: Text("Apakah Anda yakin ingin menghapus produk ini?"),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(true); // User confirms deletion
+                              },
+                              child: Text("Ya"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(false); // User cancels deletion
+                              },
+                              child: Text("Tidak"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (confirmDelete == true) {
+                      bool success = await _transaksiController.deleteTransaksi(id);
+                      if (success) {
+                        _transaksiController.shouldUpdate.value = true;
+                        Get.back(); // Kembali ke halaman produk
+                        Get.snackbar('Success', 'Berhasil delete');
+                      } else {
+                        Get.snackbar('Failed', 'Failed to delete transaction');
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                  child: Text(
+                    "Hapus",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
                 ],
               ),
             ),

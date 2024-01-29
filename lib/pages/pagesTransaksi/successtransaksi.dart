@@ -1,11 +1,13 @@
+import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:e_petshop/controller/usersContoller.dart';
+import 'package:e_petshop/pdf/pdf.dart';
 import 'package:e_petshop/theme/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
 import 'package:image/image.dart' as img;
 
 class TransaksiS extends StatefulWidget {
@@ -33,11 +35,27 @@ class TransaksiS extends StatefulWidget {
 
 class _TransaksiSState extends State<TransaksiS> {
   final UsersController _UsersController = Get.find<UsersController>();
+  final EmsPdfService emspdfservice = EmsPdfService();
+  List _orders = [];
+
+  Future<void> readJson() async {
+    final String response = await rootBundle.loadString("assets/orders.json");
+    final data = await json.decode(response);
+    setState(() {
+      _orders = data['records'];
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    readJson();
+  }
 
   @override
   Widget build(BuildContext context) {
     Future<Uint8List> resizeImage(
-        Uint8List imageBytes, int newWidth, int newHeight) async {
+      Uint8List imageBytes, int newWidth, int newHeight) async {
       img.Image? image = img.decodeImage(imageBytes);
 
       if (image == null) {
@@ -53,32 +71,30 @@ class _TransaksiSState extends State<TransaksiS> {
       return resizedImageBytes;
     }
 
-      
     final currencyFormatter =
         NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ');
+
     return Scaffold(
       body: Container(
         width: double.infinity,
         color: Colour.b,
         padding: EdgeInsets.fromLTRB(20, 120, 20, 0),
-        child: Column(children: [
-          // Container(
-          //   child: Image(
-          //     image: AssetImage('images/logo.png'),
-          //   ),
-          // ),
-          SizedBox(
-            height: 20,
-          ),
-          Text(
-            "Transaksi Berhasil",
-            style: TextStyle(
+        child: Column(
+          children: [
+            SizedBox(height: 20),
+            Text(
+              "Transaksi Berhasil",
+              style: TextStyle(
                 fontFamily: 'OpenSans',
                 fontSize: 24,
-                fontWeight: FontWeight.bold),
-          ),
-        
-          Container(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 20),
+              child: Column(
+                children: [
+                       Container(
             margin: EdgeInsets.only(top: 20),
             child: Column(
               children: [
@@ -255,26 +271,58 @@ class _TransaksiSState extends State<TransaksiS> {
               ],
             ),
           ),
-          Container(
-            margin: EdgeInsets.only(top: 20),
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-                style:
-                    ElevatedButton.styleFrom(backgroundColor: Colour.primary),
-                onPressed: () {
-                        Get.offNamed('/transaksi');
-                },
-                child: Text(
-                  "Selesai",
-                  style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                )),
-          )
-        ]),
+
+                  Container(
+                    margin: EdgeInsets.only(top: 20),
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          final data = await emspdfservice.generateEMSPDF(
+                            "${widget.nomor_unik}",
+                            "${widget.created_at}",
+                            "${widget.nama_pelanggan}",
+                            "${widget.nama_produk}",
+                            "${currencyFormatter.format(widget.harga_produk)}",
+                            "${currencyFormatter.format(widget.uang_bayar)}",
+                            "${currencyFormatter.format(widget.uang_kembali)}",
+                          );
+
+                          await emspdfservice.savePdfFile(
+                              "Invoice_Transactions", data);
+
+                          Get.snackbar('Success', 'PDF saved successfully!');
+                        } catch (e) {
+                          print('Error: $e');
+                          Get.snackbar('Error', 'Failed to save PDF');
+                        }
+                      },
+                      child: const Text("Print"),
+                    ),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colour.primary,
+                    ),
+                    onPressed: () {
+                      Get.offNamed('/transaksi');
+                    },
+                    child: Text(
+                      "Selesai",
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

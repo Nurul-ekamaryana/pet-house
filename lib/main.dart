@@ -9,6 +9,7 @@ import 'package:e_petshop/pages/pagesProduk/produk_create.dart';
 import 'package:e_petshop/pages/pagesTransaksi/transaksi.dart';
 import 'package:e_petshop/pages/pagesTransaksi/transaksi_detail.dart';
 import 'package:e_petshop/pages/pagesUsers/users.dart';
+import 'package:e_petshop/pdf/home.dart';
 import 'package:e_petshop/theme/color.dart';
 import 'package:e_petshop/theme/screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/splash', page: () => Screenpage()),
         GetPage(name: '/login', page: () => LoginPage()),
+        // GetPage(name: '/homepdf', page: () => Home()),
         GetPage(name: '/home', page: () => MyHomePage()),
         GetPage(name: '/produk', page: () => ProdukPage()),
         GetPage(name: '/transaksi', page: () => TransaksiPage()),
@@ -98,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
           centerTitle: true,
           automaticallyImplyLeading: false,
         ),
-        body: Padding(
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -212,6 +214,27 @@ class _MyHomePageState extends State<MyHomePage> {
                   }
                 },
               ),
+              // FutureBuilder<int>(
+              //   future: _logController.countLog(),
+              //   builder: (context, snapshot) {
+              //     if (snapshot.connectionState == ConnectionState.waiting) {
+              //       return CircularProgressIndicator();
+              //     } else if (snapshot.hasError) {
+              //       return Text('Error: ${snapshot.error}');
+              //     } else {
+              //       int produkCount = snapshot.data ?? 0;
+              //       return buildProductTile(
+              //         title: "laporan",
+              //         subtitle: produkCount.toString(),
+              //         icon: Icons.history,
+              //         iconColor: Colour.primary,
+              //         onTap: () {
+              //           Get.offNamed('/homepdf');
+              //         },
+              //       );
+              //     }
+              //   },
+              // ),
             ],
           ),
         ),

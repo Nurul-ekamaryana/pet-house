@@ -155,7 +155,7 @@ class _UserPageState extends State<UsersPage> {
                         });
                       },child: Card(
                           margin:
-                              EdgeInsets.symmetric(horizontal: 18, vertical: 5),
+                              EdgeInsets.symmetric(horizontal: 25, vertical: 5),
                           color: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16.0),

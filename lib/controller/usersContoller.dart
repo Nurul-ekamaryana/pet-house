@@ -87,7 +87,7 @@ class UsersController extends GetxController {
         ElevatedButton(
           onPressed: () async {
             await FirebaseAuth.instance.signOut();
-            Get.offNamed('/login');
+            Get.offNamed('/splash');
             Get.snackbar('Sign Out', 'You have been signed out');
           },
           child: Text("Ya"),

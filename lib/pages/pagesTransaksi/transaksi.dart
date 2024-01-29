@@ -7,6 +7,9 @@ import 'package:e_petshop/theme/color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class TransaksiPage extends StatefulWidget {
   const TransaksiPage({Key? key});
@@ -16,11 +19,15 @@ class TransaksiPage extends StatefulWidget {
 }
 
 class _TransaksiPageState extends State<TransaksiPage> {
-  final UsersController _UsersController = Get.find<UsersController>();
+  final UsersController _usersController = Get.find<UsersController>();
   final currencyFormatter = NumberFormat.currency(locale: 'id', symbol: 'Rp ');
-  final CollectionReference transaksiCollection =
-      FirebaseFirestore.instance.collection('transactions');
+  final CollectionReference transaksiCollection = FirebaseFirestore.instance.collection('transactions');
   var searchQuery = '';
+
+  DateTime? selectedDate;
+
+  List<DocumentSnapshot> transaksiList = [];
+  List<DocumentSnapshot> filteredTransaksi = [];
 
   void queryProduk(String query) {
     setState(() {
@@ -28,8 +35,6 @@ class _TransaksiPageState extends State<TransaksiPage> {
       filterTransaksi();
     });
   }
-
-  DateTime? selectedDate;
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -46,9 +51,6 @@ class _TransaksiPageState extends State<TransaksiPage> {
       });
     }
   }
-
-  List<DocumentSnapshot> transaksiList = [];
-  List<DocumentSnapshot> filteredTransaksi = [];
 
   void getTransaksi() {
     transaksiCollection.snapshots().listen((snapshot) {
@@ -86,7 +88,8 @@ class _TransaksiPageState extends State<TransaksiPage> {
 
   @override
   Widget build(BuildContext context) {
-    UserRole currentUserRole = _UsersController.getCurrentUserRole();
+    UserRole currentUserRole = _usersController.getCurrentUserRole();
+
     return Scaffold(
       backgroundColor: Colour.b,
       appBar: AppBar(
@@ -162,25 +165,16 @@ class _TransaksiPageState extends State<TransaksiPage> {
                     onPressed: () async {
                       await _selectDate(context);
                       if (filteredTransaksi.isNotEmpty) {
-                        final selectedTransaction = filteredTransaksi
-                            .first; // Assuming you want the first transaction in the list
-                        final transaksiData =
-                            selectedTransaction.data() as Map<String, dynamic>;
+                        final selectedTransaction = filteredTransaksi.first;
+                        final transaksiData = selectedTransaction.data() as Map<String, dynamic>;
                         Get.to(() => TransaksiL(
-                              nama_pelanggan: transaksiData['nama_pelanggan'],
-                              nama_produk: transaksiData[
-                                  'nama_produk'], // Replace with actual data
-                              harga_produk:
-                                  transaksiData['harga_produk']?.toDouble() ??
-                                      0.0, // Replace with actual data
-                              uang_bayar:
-                                  transaksiData['uang_bayar']?.toDouble() ??
-                                      0.0, // Replace with actual data
-                              uang_kembali:
-                                  transaksiData['uang_kembali']?.toDouble() ??
-                                      0.0, // Replace with actual data
-                              selectedDate: selectedDate,
-                            ));
+                          nama_pelanggan: transaksiData['nama_pelanggan'],
+                          nama_produk: transaksiData['nama_produk'],
+                          harga_produk: transaksiData['harga_produk']?.toDouble() ?? 0.0,
+                          uang_bayar: transaksiData['uang_bayar']?.toDouble() ?? 0.0,
+                          uang_kembali: transaksiData['uang_kembali']?.toDouble() ?? 0.0,
+                          selectedDate: selectedDate,
+                        ));
                       } else {
                         // Handle the case when filteredTransaksi is empty
                       }
@@ -188,13 +182,15 @@ class _TransaksiPageState extends State<TransaksiPage> {
                     icon: Icon(Icons.date_range),
                   ),
                 if (currentUserRole == UserRole.Owner)
-                  Text('By tanggal',
-                      style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.black,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold)
-                        ),
+                  Text(
+                    'By tanggal',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      color: Colors.black,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
               ],
             ),
             SizedBox(height: 4),
@@ -240,111 +236,82 @@ class _TransaksiPageState extends State<TransaksiPage> {
                   return ListView.builder(
                     itemCount: filteredTransaksi.length,
                     itemBuilder: (context, index) {
-                      var transaksiData = filteredTransaksi[index].data()
-                          as Map<String, dynamic>;
+                      var transaksiData = filteredTransaksi[index].data() as Map<String, dynamic>;
                       String namaPembeli = transaksiData['nama_pelanggan'];
                       String namaProduk = transaksiData['nama_produk'];
+                      // String nomorunik = transaksiData['nomor_unik'];
+                      String tanggal = transaksiData['updated_at'];
 
-                      double hargaProduk =
-                          transaksiData['harga_produk']?.toDouble() ?? 0.0;
-                      String formattedPrice =
-                          currencyFormatter.format(hargaProduk);
-                      double uangBayar =
-                          transaksiData['uang_bayar']?.toDouble() ?? 0.0;
-                      String formattedUangBayar =
-                          currencyFormatter.format(uangBayar);
-                      double uangKembali =
-                          transaksiData['uang_kembali']?.toDouble() ?? 0.0;
-                      String formattedUangKembali =
-                          currencyFormatter.format(uangKembali);
+                      double hargaProduk = transaksiData['harga_produk']?.toDouble() ?? 0.0;
+                      String formattedPrice = currencyFormatter.format(hargaProduk);
+                      double nomorunik = transaksiData['nomor_unik']?.toDouble() ?? 0.0;
+                      String formattednouniq = currencyFormatter.format(hargaProduk);
+                      double uangBayar = transaksiData['uang_bayar']?.toDouble() ?? 0.0;
+                      String formattedUangBayar = currencyFormatter.format(uangBayar);
+                      double uangKembali = transaksiData['uang_kembali']?.toDouble() ?? 0.0;
+                      String formattedUangKembali = currencyFormatter.format(uangKembali);
 
-                      return GestureDetector(
-  child: Container(
-    margin: EdgeInsets.only(bottom: 10),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(12),
-      color: Colors.white,
-    ),
-    padding: const EdgeInsets.all(20),
-    height: 94,
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                namaPembeli,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontFamily: "Poppins",
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "$namaProduk",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey,
-                      fontFamily: "Poppins",
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  // Text(
-                  //   formattedPrice,
-                  //   style: TextStyle(
-                  //     fontSize: 13,
-                  //     color: Colors.grey,
-                  //     fontFamily: "Poppins",
-                  //     fontWeight: FontWeight.bold,
-                  //   ),
-                  // ),
-                ],
-              ),
-            ],
-          ),
-        ),
-       if (currentUserRole == UserRole.Admin)
-  GestureDetector(
-    onTap: () {
-      Get.to(() => TransaksiDetail(), arguments: {
-        'id': filteredTransaksi[index].id,
-        'nama_pelanggan': namaPembeli,
-        'nama_produk': namaProduk,
-        'uang_bayar': uangBayar,
-        'uang_kembali': uangKembali,
-      });
-    },
-    child: Icon(
-      Icons.edit, // Replace with the desired icon
-      color: Colors.blue, // Adjust the color as needed
-      size: 24.0, // Adjust the size as needed
-    ),
-  ),
-
-      ],
-    ),
-  ),
-  onTap: () {
-    if (currentUserRole == UserRole.Admin) {
-      Get.to(() => TransaksiDetail(), arguments: {
-        'id': filteredTransaksi[index].id,
-        'nama_pelanggan': namaPembeli,
-        'nama_produk': namaProduk,
-        'uang_bayar': uangBayar,
-        'uang_kembali': uangKembali,
-      });
-    }
-  },
-);
-
+                      return Card(
+                        margin: EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                height: 90, // Adjust height as needed
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                  color: Colour.primary, // Adjust color as needed
+                                ),
+                                padding: EdgeInsets.all(8),
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 13.0),
+                                  title: Text(
+                                    namaPembeli,
+                                    style: TextStyle(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                     '$namaProduk = $formattedPrice',
+                                    style: TextStyle(
+                                      fontSize: 14.0,
+                                      color: const Color.fromARGB(255, 88, 88, 88),
+                                    ),
+                                  ),
+                                  trailing: CircleAvatar(
+                                    child: Icon(
+                                      Icons.edit,
+                                      color: Colour.primary,
+                                      size: 28.0,
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    Get.to(() => TransaksiDetail(), arguments: {
+                                      'id': filteredTransaksi[index].id,
+                                      'nama_pelanggan': namaPembeli,
+                                      'nomor_unik': nomorunik,
+                                      'nama_produk': namaProduk,
+                                      'uang_bayar': uangBayar,
+                                      'uang_kembali': uangKembali,
+                                      'updated_at': tanggal,
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
                     },
                   );
                 },

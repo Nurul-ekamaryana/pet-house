@@ -175,7 +175,7 @@ class _ProdukPageState extends State<ProdukPage> {
                         
                         child: Card(
                           margin:
-                              EdgeInsets.symmetric(horizontal: 14, vertical: 1),
+                              EdgeInsets.symmetric(horizontal: 22, vertical: 1),
                           color: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16.0),

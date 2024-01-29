@@ -19,7 +19,7 @@ class _ProdukCreateState extends State<ProdukCreate> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colour.b,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colour.primary,
         toolbarHeight: 120,

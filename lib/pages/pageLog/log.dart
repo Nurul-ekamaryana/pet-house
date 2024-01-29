@@ -112,6 +112,7 @@ class _LogPageState extends State<LogPage> {
                       : logs.where((logs) {
                           final name =
                               logs['username'].toString().toLowerCase();
+
                           return name.contains(searchQuery);
                         }).toList();
                   if (filteredlogs.isEmpty) {
@@ -136,47 +137,49 @@ class _LogPageState extends State<LogPage> {
                       String activity = logsData['activity'];
                       String tanggal = logsData['created_at'];
 
-                      return GestureDetector(
-                        child: Container(
-                          margin: EdgeInsets.only(bottom: 5),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: Colors.white,
-                          ),
-                          padding: const EdgeInsets.all(20),
-                          height: 94,
+                      return Card(
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(0),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // Image(
-                              //   image: AssetImage('images/history.png'),
-                              //   width: 40,
-                              //   height: 40,
-                              // ),
+                              Container(
+                                height: 90, // Adjust height as needed
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                  color:
+                                      Colour.primary, // Adjust color as needed
+                                ),
+                                padding: EdgeInsets.all(8),
+                              ),
                               SizedBox(width: 10),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      '$name -> $activity',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontFamily: "Poppins",
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 10.0,
+                                    vertical: 13.0,
+                                  ),
+                                  title: Text(
+                                    '$name -> $activity',
+                                    style: TextStyle(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    Text(
-                                      tanggal,
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.grey,
-                                        fontFamily: "Poppins",
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )
-                                  ],
+                                  ),
+                                  subtitle: Text(
+                                    tanggal,
+                                    style: TextStyle(
+                                      fontSize: 14.0,
+                                      color:
+                                          const Color.fromARGB(255, 88, 88, 88),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
