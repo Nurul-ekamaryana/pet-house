@@ -97,6 +97,15 @@ class _UserPageState extends State<UsersPage> {
                   ),
                 ),
                 SizedBox(height: 10),
+                  Text(
+              'All Users',
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
               ],
             ),
           ),

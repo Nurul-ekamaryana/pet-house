@@ -77,7 +77,6 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
         _hargaProduk = hargaProduk;
         _cirihas = cirihas;
         _jenis = jenis;
-        // Update the _hargaProdukController text here
         _hargaProdukController.text = currencyFormatter.format(hargaProduk);
          _jenisController.text = _jenis;
           _cirihasController.text = _cirihas;
@@ -423,12 +422,12 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                             _selectedProduct.toString(),
                             _hargaProduk.toString(),
                             uangBayar.toString(),
-                            uangKembali.toString()
-                          );
+                            uangKembali.toString()     
+                            );
 
                           await emspdfservice.savePdfFile(
                               "Invoice_Transactions", data);
-
+                          _addLog("Mencetak Struk");
                           Get.snackbar('Success', 'PDF saved successfully!');
                         } catch (e) {
                           print('Error: $e');
@@ -474,6 +473,7 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                       if (success) {
                         _transaksiController.shouldUpdate.value = true;
                         Get.back(); // Kembali ke halaman produk
+                        _addLog("menghapus transaksi");
                         Get.snackbar('Success', 'Berhasil delete');
                       } else {
                         Get.snackbar('Failed', 'Failed to delete transaction');

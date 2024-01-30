@@ -195,52 +195,53 @@ class ProdukDetail extends StatelessWidget {
                       style: TextStyle(color: Colors.white),
                     )),
                 ElevatedButton(
-  onPressed: () async {
-    bool confirmDelete = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Konfirmasi"),
-          content: Text("Apakah Anda yakin ingin menghapus produk ini?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true); // User confirms deletion
-              },
-              child: Text("Ya"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false); // User cancels deletion
-              },
-              child: Text("Tidak"),
-            ),
-          ],
-        );
-      },
-    );
+                onPressed: () async {
+                  bool confirmDelete = await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Konfirmasi"),
+                        content: Text("Apakah Anda yakin ingin menghapus produk ini?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(true); // User confirms deletion
+                            },
+                            child: Text("Ya"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(false); // User cancels deletion
+                            },
+                            child: Text("Tidak"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
 
-    if (confirmDelete == true) {
-      bool success = await _produkController.deleteProduk(id);
-      if (success) {
-        _produkController.shouldUpdate.value = true;
-        Get.back(); // Kembali ke halaman produk
-        Get.snackbar('Success', 'Berhasil delete');
-      } else {
-        Get.snackbar('Failed', 'Failed to delete transaction');
-      }
-    }
-  },
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.red,
-  ),
-  child: Text(
-    "Hapus",
-    style: TextStyle(color: Colors.white),
-  ),
-),
+                  if (confirmDelete == true) {
+                    bool success = await _produkController.deleteProduk(id);
+                    if (success) {
+                      _produkController.shouldUpdate.value = true;
+                      Get.back(); // Kembali ke halaman produk
+                      _addLog("Menahapus produk");
+                      Get.snackbar('Success', 'Berhasil delete');
+                    } else {
+                      Get.snackbar('Failed', 'Failed to delete transaction');
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
+                child: Text(
+                  "Hapus",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
 
-              ],
+                            ],
             ),
           ],
         ),

@@ -8,6 +8,7 @@ import 'package:e_petshop/pages/pagesProduk/produk.dart';
 import 'package:e_petshop/pages/pagesProduk/produk_create.dart';
 import 'package:e_petshop/pages/pagesTransaksi/transaksi.dart';
 import 'package:e_petshop/pages/pagesTransaksi/transaksi_detail.dart';
+import 'package:e_petshop/pages/pagesUsers/user_detail.dart';
 import 'package:e_petshop/pages/pagesUsers/users.dart';
 import 'package:e_petshop/pdf/home.dart';
 import 'package:e_petshop/theme/color.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/transaksi', page: () => TransaksiPage()),
         GetPage(name: '/transaksid', page: () => TransaksiDetail()),
         GetPage(name: '/users', page: () => UsersPage()),
+        GetPage(name: '/usersdetail', page: () => UserDetail()),
         GetPage(name: '/produkcreate', page: () => ProdukCreate()),
         GetPage(name: '/log', page: () => LogPage()),
       ],

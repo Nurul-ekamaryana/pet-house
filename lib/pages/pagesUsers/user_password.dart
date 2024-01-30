@@ -3,31 +3,62 @@ import 'package:e_petshop/theme/color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class UserPassword extends StatelessWidget {
+class UserPassword extends StatefulWidget {
+  final String userId;
+
+  UserPassword({required this.userId});
+
+  @override
+  _UserPasswordState createState() => _UserPasswordState();
+}
+
+class _UserPasswordState extends State<UserPassword> {
   final UsersController _usersController = UsersController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmController = TextEditingController();
-  final String userId; // Add userId property
-
-  UserPassword({required this.userId}); // Constructor to receive userId
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
-         
-
-    // Removed the arguments retrieval since userId is passed in the constructor
-    // final Map<String, dynamic>? args = Get.arguments;
-    // final String userId = args?['userId'] ?? '';
-
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colour.b,
-        title: Text(
-          'Ganti Password',
-          style: TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+        backgroundColor: Colour.primary,
+        toolbarHeight: 120,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(30),
+          ),
+        ),
+        leading: IconButton(
+          color: Colors.white,
+          onPressed: () {
+            Get.back();
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
+        actions: [],
+        title: Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 4.3, left: 70.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Ganti Password',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'OpenSans',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.right,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -35,49 +66,11 @@ class UserPassword extends StatelessWidget {
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(
-              controller: passwordController,
-              decoration: InputDecoration(
-                hintText: 'Enter new password',
-                label: Text(
-                  'New Password',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
+            buildPasswordField(
+                passwordController, 'Password Baru', _obscurePassword),
             SizedBox(height: 20),
-            TextField(
-              controller: confirmController,
-              decoration: InputDecoration(
-                hintText: 'Confirm new password',
-                label: Text(
-                  'Confirm Password',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
+            buildPasswordField(
+                confirmController, 'Ulangi Password', _obscureConfirmPassword),
             SizedBox(height: 20),
             Container(
               alignment: AlignmentDirectional.centerStart,
@@ -96,7 +89,7 @@ class UserPassword extends StatelessWidget {
                           confirmNewPassword.isNotEmpty) {
                         if (newPassword == confirmNewPassword) {
                           _usersController.updatePassword(
-                              userId, newPassword, confirmNewPassword);
+                              widget.userId, newPassword, confirmNewPassword);
                         } else {
                           print('Passwords do not match');
                         }
@@ -119,6 +112,42 @@ class UserPassword extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildPasswordField(
+      TextEditingController controller, String label, bool obscure) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      decoration: InputDecoration(
+        hintText: '***',
+        labelText: label,
+        labelStyle: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          fontFamily: 'Poppins',
+        ),
+        filled: true,
+        fillColor: Colour.secondary,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        suffixIcon: IconButton(
+          icon: Icon(obscure ? Icons.visibility : Icons.visibility_off),
+          onPressed: () {
+            setState(() {
+              if (controller == passwordController) {
+                _obscurePassword = !_obscurePassword;
+              } else if (controller == confirmController) {
+                _obscureConfirmPassword = !_obscureConfirmPassword;
+              }
+            });
+          },
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:e_petshop/controller/logController.dart';
 import 'package:e_petshop/controller/produkController.dart';
 import 'package:e_petshop/model.dart/produk.dart';
 import 'package:e_petshop/theme/color.dart';
@@ -15,6 +16,7 @@ class _ProdukCreateState extends State<ProdukCreate> {
   final TextEditingController jenisController = TextEditingController();
   final TextEditingController cirihasController = TextEditingController();
   final TextEditingController hargaController = TextEditingController();
+  final LogController logController = LogController();
 
   @override
   Widget build(BuildContext context) {
@@ -177,6 +179,7 @@ class _ProdukCreateState extends State<ProdukCreate> {
                       print('Produk added successfully');
                       _produkController.shouldUpdate.value = true;
                       Get.offNamed('/produk');
+                      _addLog('Menambah Produk');
                     } else {
                       print('Failed to add produk');
                     }
@@ -195,5 +198,14 @@ class _ProdukCreateState extends State<ProdukCreate> {
       ),
       ),
     );
+  }
+
+   Future<void> _addLog(String activity) async {
+    try {
+      await logController.addLog(activity);
+      print('Log added successfully!');
+    } catch (e) {
+      print('Failed to add log: $e');
+    }
   }
 }

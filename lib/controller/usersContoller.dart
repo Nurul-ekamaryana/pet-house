@@ -138,10 +138,11 @@ class UsersController extends GetxController {
         await _firestore.collection('users').doc(userId).update({
           'password': newPassword,
         });
+        print('behasil');
         Get.snackbar('Success', 'Password updated successfully');
       } else {
-        Get.snackbar(
-            'Update Error', 'Password and Confirm Password do not match');
+        print('eror');
+        Get.snackbar('Error', 'Password and Confirm Password do not match');
       }
     } catch (e) {
       Get.snackbar('Update Error', e.toString(),
