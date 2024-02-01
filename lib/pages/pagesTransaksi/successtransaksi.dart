@@ -16,6 +16,8 @@ class TransaksiS extends StatefulWidget {
   final String nama_produk;
   final double harga_produk;
   final double uang_bayar;
+  final int qty;
+  final double total;
   final double uang_kembali;
   final String created_at;
 
@@ -25,8 +27,10 @@ class TransaksiS extends StatefulWidget {
     required this.harga_produk,
     required this.nama_produk,
     required this.uang_bayar,
+    required this.qty,
+    required this.total,
     required this.uang_kembali,
-    required this.created_at,
+    required this.created_at, 
   });
 
   @override
@@ -103,6 +107,9 @@ class _TransaksiSState extends State<TransaksiS> {
         _buildDetailRow("Nama Barang", "${widget.nama_produk}"),
         _buildDetailRow(
             "Harga Satuan", currencyFormatter.format(widget.harga_produk)),
+        _buildDetailRow("jumlah", "${widget.qty}"),
+        _buildDetailRow(
+            "Total Harga", currencyFormatter.format(widget.total)),
         _buildDetailRow("Uang Bayar", currencyFormatter.format(widget.uang_bayar)),
         _buildDetailRow(
             "Uang Kembali", currencyFormatter.format(widget.uang_kembali)),
@@ -188,6 +195,8 @@ class _TransaksiSState extends State<TransaksiS> {
         "${widget.nama_pelanggan}",
         "${widget.nama_produk}",
         currencyFormatter.format(widget.harga_produk),
+        "${widget.qty}",
+        currencyFormatter.format(widget.total),
         currencyFormatter.format(widget.uang_bayar),
         currencyFormatter.format(widget.uang_kembali),
       );

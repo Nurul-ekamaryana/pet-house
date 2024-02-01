@@ -13,6 +13,8 @@ class EmsPdfService {
     String namaPelanggan,
     String namaProduk,
     String hargaProduk,
+    String qty,
+    String total,
     String uangBayar,
     String uangKembali,
   ) async {
@@ -159,26 +161,46 @@ class EmsPdfService {
                   ],
                 ),
               ),
-              // pw.Container(
-              //   margin: pw.EdgeInsets.symmetric(vertical: 5),
-              //   child: pw.Row(
-              //     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              //     children: [
-              //       pw.Text(
-              //         "Quantity : ",
-              //         style: pw.TextStyle(
-              //           fontSize: 14,
-              //         ),
-              //       ),
-              //       pw.Text(
-              //         "3",
-              //         style: pw.TextStyle(
-              //           fontSize: 14,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
+              pw.Container(
+                margin: pw.EdgeInsets.symmetric(vertical: 5),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      "Quantity : ",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                    pw.Text(
+                      qty,
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.Container(
+                margin: pw.EdgeInsets.symmetric(vertical: 5),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      "Total Belanja : ",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                    pw.Text(
+                      total,
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               pw.SizedBox(
                 height: 20,
               ),

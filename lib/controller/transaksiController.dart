@@ -30,23 +30,23 @@ class TransaksiController extends GetxController {
   }
 
   Future<bool> updateTransaksi(
-      String id,
-      String nama_pelanggan,
-      String nama_produk,
-      double harga_produk,
-      String jenis,
-      String cirihas,
-      double uang_bayar,
-      double uang_kembali) async {
+    String id,
+    String namaPembeli,
+    String selectedProduct,
+    double hargaProduk,
+    double uangBayar,
+    int qty,
+    double total,
+    double uangKembali,) async {
     try {
       await _firestore.collection('transactions').doc(id).update({
-        'nama_pelanggan': nama_pelanggan,
-        'nama_produk': nama_produk,
-        'harga_produk': harga_produk,
-        'jenis': jenis,
-        'ciri_has': cirihas,
-        'uang_bayar': uang_bayar,
-        'uang_kembali': uang_kembali,
+        'nama_pelanggan': namaPembeli,
+        'nama_produk': selectedProduct,
+        'harga_produk': hargaProduk,
+        'qty': qty,
+        'total': total,
+        'uang_bayar': uangBayar,
+        'uang_kembali': uangKembali,
         'updated_at': DateTime.now().toString(),
       });
       shouldUpdate.toggle();

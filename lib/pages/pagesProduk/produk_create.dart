@@ -13,8 +13,8 @@ class ProdukCreate extends StatefulWidget {
 class _ProdukCreateState extends State<ProdukCreate> {
   final ProdukController _produkController = Get.put(ProdukController());
   final TextEditingController namaController = TextEditingController();
-  final TextEditingController jenisController = TextEditingController();
-  final TextEditingController cirihasController = TextEditingController();
+  // final TextEditingController jenisController = TextEditingController();
+  // final TextEditingController cirihasController = TextEditingController();
   final TextEditingController hargaController = TextEditingController();
   final LogController logController = LogController();
 
@@ -86,46 +86,46 @@ class _ProdukCreateState extends State<ProdukCreate> {
                 ),
               ),
             ),
-            SizedBox(height: 12),
-            TextField(
-              controller: jenisController,
-              decoration: InputDecoration(
-                hintText: 'Ex. Persia',
-                labelText: 'Jenis Hewan',
-                labelStyle: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  fontFamily: 'Poppins',
-                ),
-                filled: true,
-                fillColor: Colour.secondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            SizedBox(height: 12),
-            TextField(
-              controller: cirihasController,
-              decoration: InputDecoration(
-                hintText: 'Ex. Berwarna Hijau',
-                labelText: 'Ciri Has',
-                labelStyle: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  fontFamily: 'Poppins',
-                ),
-                filled: true,
-                fillColor: Colour.secondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
+            // SizedBox(height: 12),
+            // TextField(
+            //   controller: jenisController,
+            //   decoration: InputDecoration(
+            //     hintText: 'Ex. Persia',
+            //     labelText: 'Jenis Hewan',
+            //     labelStyle: TextStyle(
+            //       color: Colors.black,
+            //       fontWeight: FontWeight.bold,
+            //       fontSize: 16,
+            //       fontFamily: 'Poppins',
+            //     ),
+            //     filled: true,
+            //     fillColor: Colour.secondary,
+            //     border: OutlineInputBorder(
+            //       borderRadius: BorderRadius.circular(10),
+            //       borderSide: BorderSide.none,
+            //     ),
+            //   ),
+            // ),
+            // SizedBox(height: 12),
+            // TextField(
+            //   controller: cirihasController,
+            //   decoration: InputDecoration(
+            //     hintText: 'Ex. Berwarna Hijau',
+            //     labelText: 'Ciri Has',
+            //     labelStyle: TextStyle(
+            //       color: Colors.black,
+            //       fontWeight: FontWeight.bold,
+            //       fontSize: 16,
+            //       fontFamily: 'Poppins',
+            //     ),
+            //     filled: true,
+            //     fillColor: Colour.secondary,
+            //     border: OutlineInputBorder(
+            //       borderRadius: BorderRadius.circular(10),
+            //       borderSide: BorderSide.none,
+            //     ),
+            //   ),
+            // ),
             SizedBox(height: 12),
             TextField(
               controller: hargaController,
@@ -157,19 +157,17 @@ class _ProdukCreateState extends State<ProdukCreate> {
                 ),
                 onPressed: () async {
                   String nama_produk = namaController.text.trim();
-                  String ciri_has = cirihasController.text.trim();
-                  String jenis = jenisController.text.trim();
+                  // String ciri_has = cirihasController.text.trim();
+                  // String jenis = jenisController.text.trim();
                   double harga_produk =
                       double.tryParse(hargaController.text.trim()) ?? 0.0;
 
                   if (nama_produk.isNotEmpty &&
-                      harga_produk > 0 &&
-                      jenis.isNotEmpty &&
-                      ciri_has.isNotEmpty) {
+                      harga_produk > 0 ) {
                     Produk newProduk = Produk(
                       nama_produk: nama_produk,
-                      jenis: jenis,
-                      ciri_has: ciri_has,
+                      // jenis: jenis,
+                      // ciri_has: ciri_has,
                       harga_produk: harga_produk,
                       created_at: DateTime.now().toString(),
                       updated_at: DateTime.now().toString(),

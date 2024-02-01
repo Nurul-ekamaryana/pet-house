@@ -237,7 +237,7 @@ Future<String> generateAndSaveInvoice(
         title: Align(
           alignment: Alignment.bottomLeft,
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 4.3, left: 59.0),
+            padding: const EdgeInsets.only(bottom: 4.3, left: 70.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -370,13 +370,20 @@ Future<String> generateAndSaveInvoice(
                       String namaPembeli = transaksiData['nama_pelanggan'];
                       String namaProduk = transaksiData['nama_produk'];
                       String tanggal = transaksiData['updated_at'];
+                      int qty = transaksiData['qty'];
 
                       double hargaProduk = transaksiData['harga_produk']?.toDouble() ?? 0.0;
                       String formattedPrice = currencyFormatter.format(hargaProduk);
+
+                      double total = transaksiData['total']?.toDouble() ?? 0.0;
+                      String formattedtotal = currencyFormatter.format(total);
+
                       double nomoruniq = transaksiData['nomor_unik']?.toDouble() ?? 0.0;
                       String formattedno = currencyFormatter.format(nomoruniq);
+
                       double uangBayar = transaksiData['uang_bayar']?.toDouble() ?? 0.0;
                       String formattedUangBayar = currencyFormatter.format(uangBayar);
+                      
                       double uangKembali = transaksiData['uang_kembali']?.toDouble() ?? 0.0;
                       String formattedUangKembali = currencyFormatter.format(uangKembali);
 
@@ -430,6 +437,8 @@ Future<String> generateAndSaveInvoice(
                                       'nama_pelanggan': namaPembeli,
                                       'nomor_unik': nomoruniq,
                                       'nama_produk': namaProduk,
+                                      'qty': qty,
+                                      'total': total,
                                       'uang_bayar': uangBayar,
                                       'uang_kembali': uangKembali,
                                       'updated_at': tanggal,
@@ -568,13 +577,11 @@ Widget buildProductDetailRow(Map<String, dynamic> item) {
       NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ');
 
   String formattedPrice = currencyFormatter.format(item['hargaProduk'] ?? 0.0);
-  String formattedTotal = currencyFormatter.format(item['totalBelanja'] ?? 0.0);
-
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
       Text(
-        "${item['namaProduk']} x ${item['qty']}",
+        "${item['nama_produk']}",
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.bold,
@@ -582,7 +589,7 @@ Widget buildProductDetailRow(Map<String, dynamic> item) {
         ),
       ),
       Text(
-        "Total: $formattedTotal",
+        "Total: $formattedPrice",
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.bold,

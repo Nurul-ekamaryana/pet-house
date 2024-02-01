@@ -36,12 +36,12 @@ class ProdukController extends GetxController {
   
 
 //Update Peoduk
-  Future<bool> updateProduk(String id, String newNamaProduk, String newJenis, String newCiriHas, double newHargaProduk, String updated_at) async {
+  Future<bool> updateProduk(String id, String newNamaProduk, double newHargaProduk, String updated_at) async {
     try {
       await _firestore.collection('products').doc(id).update({
         'nama_produk': newNamaProduk,
-        'jenis': newJenis,
-        'ciri_has': newCiriHas,
+        // 'jenis': newJenis,
+        // 'ciri_has': newCiriHas,
         'harga_produk': newHargaProduk,
         'updated_at': updated_at,
       });

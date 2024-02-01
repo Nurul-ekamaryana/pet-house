@@ -21,21 +21,16 @@ class _TransaksiCreateState extends State<TransaksiCreate> {
   String? _selectedProduct;
   List<String> produkList = [];
   double _hargaProduk = 0.0;
-  String _cirihas = '';
-  String _jenis = '';
-
   double _uangKembali = 0.0;
+  double _total = 0.0;
 
   final TextEditingController _namaPembeliController = TextEditingController();
   final TextEditingController _uangBayarController = TextEditingController();
+  final TextEditingController _qtyController = TextEditingController();
   final LogController logController = LogController();
-
   final TransaksiController _transaksiController =
       Get.put(TransaksiController());
-
   final TextEditingController _hargaProdukController = TextEditingController();
-  final TextEditingController _cirihasController = TextEditingController();
-  final TextEditingController _jenisController = TextEditingController();
 
   void fetchProductPrice(String? selectedProducts) async {
     try {
@@ -47,27 +42,17 @@ class _TransaksiCreateState extends State<TransaksiCreate> {
 
         if (querySnapshot.docs.isNotEmpty) {
           double hargaProduk = querySnapshot.docs.first['harga_produk'];
-          String cirihas = querySnapshot.docs.first['ciri_has'];
-          String jenis = querySnapshot.docs.first['jenis'];
 
           setState(() {
             _hargaProduk = hargaProduk;
-            _cirihas = cirihas;
-            _jenis = jenis;
-
-            // Update the controllers directly
             _hargaProdukController.text =
                 "Rp. ${_hargaProduk.toStringAsFixed(2)}";
-            _cirihasController.text = _cirihas;
-            _jenisController.text = _jenis;
           });
         }
       } else {
         setState(() {
           _hargaProduk = 0.0;
           _hargaProdukController.text = '';
-          _jenisController.text = '';
-          _cirihasController.text = '';
         });
       }
     } catch (e) {
@@ -215,35 +200,20 @@ class _TransaksiCreateState extends State<TransaksiCreate> {
               height: 10,
             ),
             TextField(
-              controller: _cirihasController,
-              enabled: false,
+              controller: _qtyController,
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                setState(() {
+                  double qty =
+                      double.tryParse(value.replaceAll(RegExp('[^0-9]'), '')) ??
+                          0;
+                  _total = qty * _hargaProduk;
+                });
+              },
               decoration: InputDecoration(
-                hintText: 'Exm. Rp.Warna Putih',
+                hintText: 'Exm. Rp. 100.000',
                 label: Text(
-                  'Ciri Hewan',
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      fontFamily: 'Poppins'),
-                ),
-                filled: true,
-                fillColor: Colour.secondary,
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none),
-              ),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            TextField(
-              controller: _jenisController,
-              enabled: false,
-              decoration: InputDecoration(
-                hintText: 'Exm. Rp.Perisa',
-                label: Text(
-                  'Jenis',
+                  'QTY',
                   style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
@@ -268,7 +238,7 @@ class _TransaksiCreateState extends State<TransaksiCreate> {
                   double uangBayar =
                       double.tryParse(value.replaceAll(RegExp('[^0-9]'), '')) ??
                           0;
-                  _uangKembali = uangBayar - _hargaProduk;
+                  _uangKembali = uangBayar - _total;
                 });
               },
               decoration: InputDecoration(
@@ -286,6 +256,35 @@ class _TransaksiCreateState extends State<TransaksiCreate> {
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none),
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 10),
+              padding: EdgeInsets.all(10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Total",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    "${currencyFormatter.format(_total)}",
+                    // Convert the result to a string and use currencyFormatter
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(
@@ -327,12 +326,16 @@ class _TransaksiCreateState extends State<TransaksiCreate> {
                 ),
                 onPressed: () async {
                   String namaPembeli = _namaPembeliController.text.trim();
-                  double uangBayar = double.tryParse(_uangBayarController.text
-                          .replaceAll(RegExp('[^0-9]'), '')) ??
-                      0;
-                  if (_selectedProduct != null &&
-                      uangBayar >= _hargaProduk &&
-                      namaPembeli.isNotEmpty) {
+int qty = int.tryParse(_qtyController.text.replaceAll(RegExp('[^0-9]'), '')) ?? 0;
+                      double uangBayar = double.tryParse(_uangBayarController
+                              .text
+                              .replaceAll(RegExp('[^0-9]'), '')) ??
+                          0;
+                 if (_selectedProduct != null &&
+                          qty > 0 &&
+                          uangBayar > 0 &&
+                          namaPembeli.isNotEmpty &&
+                          uangBayar >= _total){
                     int _nomor_unik = Random().nextInt(1000000000);
                     String _created_at = DateTime.now().toString();
                     String _updated_at = DateTime.now().toString();
@@ -341,23 +344,25 @@ class _TransaksiCreateState extends State<TransaksiCreate> {
                       nomor_unik: _nomor_unik,
                       nama_pelanggan: namaPembeli,
                       nama_produk: _selectedProduct!,
-                      ciri_has: _cirihas!,
-                      jenis: _jenis!,
                       harga_produk: _hargaProduk,
                       uang_bayar: uangBayar,
-                      uang_kembali: _uangKembali,
+                      qty: qty,
+                      total: _total,
                       creatad_at: _created_at,
                       updated_at: _updated_at,
+                      uang_kembali: _uangKembali,
                     );
                     _addLog('menambah transaksi');
                     Get.to(() => TransaksiS(
-                          nomor_unik: _nomor_unik,
-                          nama_pelanggan: namaPembeli,
-                          nama_produk: _selectedProduct!,
-                          harga_produk: _hargaProduk,
-                          uang_bayar: uangBayar,
-                          uang_kembali: _uangKembali,
-                          created_at: _created_at,
+                      nomor_unik: _nomor_unik,
+                      nama_pelanggan: namaPembeli,
+                      nama_produk: _selectedProduct!,
+                      harga_produk: _hargaProduk,
+                      uang_bayar: uangBayar,
+                      qty: qty,
+                      total: _total,
+                      created_at: _created_at,
+                      uang_kembali: _uangKembali,
                         ));
                     Get.snackbar('Success', 'Berhasil Transaksi');
 
@@ -368,6 +373,8 @@ class _TransaksiCreateState extends State<TransaksiCreate> {
                       _namaPembeliController.clear();
                       _uangBayarController.clear();
                       _hargaProdukController.clear();
+                      _qtyController.clear();
+                      _uangBayarController.clear();
                       setState(() {
                         _selectedProduct = null;
                       });

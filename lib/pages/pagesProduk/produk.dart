@@ -47,7 +47,7 @@ class _ProdukPageState extends State<ProdukPage> {
         title: Align(
           alignment: Alignment.bottomLeft,
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 4.3, left: 59.0),
+            padding: const EdgeInsets.only(bottom: 4.3, left: 79.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -153,8 +153,7 @@ class _ProdukPageState extends State<ProdukPage> {
                     var produkData =
                         filteredProducts[index].data() as Map<String, dynamic>;
                     String namaProduk = produkData['nama_produk'];
-                    String jenis = produkData['jenis'];
-                    String ciri_has = produkData['ciri_has'];
+               
                     double hargaProduk =
                         produkData['harga_produk']?.toDouble() ?? 0.0;
                     String formattedProduk =
@@ -167,8 +166,7 @@ class _ProdukPageState extends State<ProdukPage> {
                           Get.to(() => ProdukDetail(), arguments: {
                             'id': filteredProducts[index].id,
                             'nama_produk': namaProduk,
-                            'jenis': jenis,
-                            'ciri_has': ciri_has,
+                          
                             'harga_produk': hargaProduk,
                           });
                         },
@@ -225,8 +223,7 @@ class _ProdukPageState extends State<ProdukPage> {
                                       Get.to(() => ProdukDetail(), arguments: {
                                         'id': filteredProducts[index].id,
                                         'nama_produk': namaProduk,
-                                        'jenis': jenis,
-                                        'ciri_has': ciri_has,
+                                      
                                         'harga_produk': hargaProduk,
                                       });
                                     },

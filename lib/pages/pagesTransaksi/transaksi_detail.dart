@@ -19,9 +19,8 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
   String? _selectedProduct;
   List<String> produkList = [];
   double _hargaProduk = 0.0;
-  String _cirihas = '';
-  String _jenis = '';
   double _uangKembali = 0.0;
+  double _total = 0.0;
   final LogController logController = LogController();
   final EmsPdfService emspdfservice = EmsPdfService();
   List _orders = [];
@@ -44,7 +43,7 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
     final Map<String, dynamic>? args = Get.arguments;
     _selectedProduct = args?['nama_produk'] ?? null;
     if (_selectedProduct != null) {
-      fetchBookPrice(_selectedProduct);
+      fetchprodukPrice(_selectedProduct);
     }
     _updateUangKembali(); // Call _updateUangKembali in initState
   }
@@ -61,7 +60,7 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
     });
   }
 
-  Future<void> fetchBookPrice(String? selectedProduk) async {
+  Future<void> fetchprodukPrice(String? selectedProduk) async {
   if (selectedProduk != null) {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('products')
@@ -70,16 +69,10 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
 
     if (querySnapshot.docs.isNotEmpty) {
       double hargaProduk = querySnapshot.docs.first['harga_produk'];
-      String jenis = querySnapshot.docs.first['jenis'];
-      String cirihas = querySnapshot.docs.first['ciri_has'];
 
       setState(() {
         _hargaProduk = hargaProduk;
-        _cirihas = cirihas;
-        _jenis = jenis;
         _hargaProdukController.text = currencyFormatter.format(hargaProduk);
-         _jenisController.text = _jenis;
-          _cirihasController.text = _cirihas;
       });
     }
   } else {
@@ -87,8 +80,6 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
      _hargaProduk = 0.0;
         _hargaProdukController.text = '';
         _uangKembali = 0.0;
-        _jenisController.text = '';
-        _cirihasController.text = '';
     });
   }
 }
@@ -96,9 +87,8 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
 
   final TextEditingController _namaPembeliController = TextEditingController();
   final TextEditingController _uangBayarController = TextEditingController();
+  final TextEditingController _qtyController = TextEditingController();
   final TextEditingController _hargaProdukController = TextEditingController();
-  final TextEditingController _jenisController = TextEditingController();
-  final TextEditingController _cirihasController = TextEditingController();
   final TransaksiController _transaksiController =
       Get.put(TransaksiController());
 
@@ -108,7 +98,9 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
     double uangBayar = double.tryParse(
             _uangBayarController.text.replaceAll(RegExp('[^0-9]'), '')) ??
         0;
-    double uangKembali = _hargaProduk - uangBayar;
+        int qty = int.tryParse(_qtyController.text.replaceAll(RegExp('[^0-9]'), '')) ?? 0;
+    double uangKembali = _total - uangBayar;
+    double total = _hargaProduk * qty;
 
     if (_selectedProduct != null &&
         uangBayar > _hargaProduk &&
@@ -118,14 +110,15 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
           namaPembeli,
           _selectedProduct!,
           _hargaProduk,
-          _jenis,
-          _cirihas,
           uangBayar,
+          qty,
+          total,
           uangKembali);
 
       _namaPembeliController.clear();
       _uangBayarController.clear();
       _hargaProdukController.clear();
+      _qtyController.clear();
       setState(() {
         _selectedProduct = null;
         _uangKembali = uangKembali;
@@ -144,10 +137,18 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
           _uangBayarController.text.replaceAll(RegExp('[^0-9]'), ''),
         ) ??
         0;
-    double uangKembali = _hargaProduk - uangBayar;
+    double uangKembali = _total - uangBayar;
 
     setState(() {
       _uangKembali = uangKembali;
+    });
+  }
+
+  void _updatetotal() {
+  int qty = int.tryParse(_qtyController.text) ?? 0;
+   double total = _hargaProduk * qty;
+    setState(() {
+      _total = total;
     });
   }
   @override
@@ -156,12 +157,16 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
     final String id = args?['id'] ?? '';
     final String namaPembeli = args?['nama_pelanggan'] ?? '';
     final double uangBayar = args?['uang_bayar'] ?? 0.0;
+    final int qty = args?['qty'] ?? 0.0;
+    final double total = args?['total'] ?? 0.0;
     final double uangKembali = args?['uang_kembali'] ?? 0.0;
     final double nounik = args?['nomor_unik'] ?? 0.0;
 
     _namaPembeliController.text = namaPembeli;
     _uangBayarController.text = uangBayar.toStringAsFixed(0);
-    _uangKembali = _hargaProduk - uangBayar;
+    _qtyController.text = qty.toStringAsFixed(0);
+    _uangKembali = _total - uangBayar;
+    _total = qty * _hargaProduk;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -247,7 +252,7 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                 onChanged: (String? newValue) {
                   setState(() {
                     _selectedProduct = newValue;
-                    fetchBookPrice(newValue);
+                    fetchprodukPrice(newValue);
                   });
                 },
                 items: produkList.map<DropdownMenuItem<String>>(
@@ -285,35 +290,16 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
             ),
             SizedBox(height: 20),
             TextField(
-              controller: _jenisController,
-              enabled: false,
+              controller: _qtyController,
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                // Panggil _updateUangKembali saat nilai berubah
+                _updatetotal();
+              },
               decoration: InputDecoration(
                 hintText: 'Exm. Rp. 100.000',
                 label: Text(
-                  'Jenis',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                filled: true,
-                fillColor: Colour.secondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _cirihasController,
-              enabled: false,
-              decoration: InputDecoration(
-                hintText: 'Exm. Rp. 100.000',
-                label: Text(
-                  'ciri Has',
+                  'QTY',
                   style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
@@ -354,6 +340,32 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
                 ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 10),
+              padding: EdgeInsets.all(10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Total Belanja",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    "${_total >= 0 ? '' : '-'}${currencyFormatter.format(_total.abs())}",
+                    // Convert the result to a string and use currencyFormatter
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             ),
             Container(
@@ -421,8 +433,10 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                             _namaPembeliController.text,
                             _selectedProduct.toString(),
                             _hargaProduk.toString(),
+                            qty.toString(),
+                            _total.toString(),
                             uangBayar.toString(),
-                            uangKembali.toString()     
+                            uangKembali.toString()    
                             );
 
                           await emspdfservice.savePdfFile(
