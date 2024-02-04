@@ -63,25 +63,60 @@ class _TransaksiSState extends State<TransaksiS> {
 
     return Scaffold(
       body: SingleChildScrollView(
-        child: Container(
-          width: double.infinity,
-          color: Colour.b,
-          padding: EdgeInsets.fromLTRB(20, 120, 20, 20),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Card(
+            elevation: 7,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            child: Column(
+              children: [
+                _buildAppBar(),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTransactionDetails(currencyFormatter),
+                      SizedBox(height: 20),
+                      _buildButtons(currencyFormatter),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return Card(
+      elevation: 5, // Adjust the elevation as needed
+      color: Colour.primary,
+      shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Align(
+          alignment: Alignment.center,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "Transaksi Berhasil",
+                'Transaksi Berhasil!!',
                 style: TextStyle(
+                  color: Colors.white,
                   fontFamily: 'OpenSans',
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.right,
               ),
-              SizedBox(height: 20),
-              _buildTransactionDetails(currencyFormatter),
-              SizedBox(height: 20),
-              _buildButtons(currencyFormatter),
             ],
           ),
         ),
@@ -97,49 +132,62 @@ class _TransaksiSState extends State<TransaksiS> {
           "Rincian Pembelian",
           style: TextStyle(
             fontFamily: 'Poppins',
-            fontSize: 18,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
-        SizedBox(height: 10),
+        SizedBox(height: 15),
         _buildDetailRow("No. Struk", "${widget.nomor_unik}"),
         _buildDetailRow("Nama Pembeli", "${widget.nama_pelanggan}"),
         _buildDetailRow("Nama Barang", "${widget.nama_produk}"),
         _buildDetailRow(
-            "Harga Satuan", currencyFormatter.format(widget.harga_produk)),
-        _buildDetailRow("jumlah", "${widget.qty}"),
+          "Harga Satuan",
+          currencyFormatter.format(widget.harga_produk),
+        ),
+        _buildDetailRow("Jumlah", "${widget.qty}"),
         _buildDetailRow(
-            "Total Harga", currencyFormatter.format(widget.total)),
-        _buildDetailRow("Uang Bayar", currencyFormatter.format(widget.uang_bayar)),
+          "Total Harga",
+          currencyFormatter.format(widget.total),
+        ),
         _buildDetailRow(
-            "Uang Kembali", currencyFormatter.format(widget.uang_kembali)),
+          "Uang Bayar",
+          currencyFormatter.format(widget.uang_bayar),
+        ),
+        _buildDetailRow(
+          "Uang Kembali",
+          currencyFormatter.format(widget.uang_kembali),
+        ),
       ],
     );
   }
 
   Widget _buildDetailRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+            ),
           ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey,
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -149,7 +197,8 @@ class _TransaksiSState extends State<TransaksiS> {
       children: [
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.black,
+            primary: Colors.black,
+            padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
           ),
           onPressed: () async {
             await _printReceipt(currencyFormatter);
@@ -158,7 +207,7 @@ class _TransaksiSState extends State<TransaksiS> {
             "Print",
             style: TextStyle(
               fontFamily: 'Poppins',
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -166,7 +215,8 @@ class _TransaksiSState extends State<TransaksiS> {
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colour.primary,
+            primary: Colour.primary,
+            padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
           ),
           onPressed: () {
             Get.offNamed('/transaksi');
@@ -175,7 +225,7 @@ class _TransaksiSState extends State<TransaksiS> {
             "Selesai",
             style: TextStyle(
               fontFamily: 'Poppins',
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -203,10 +253,12 @@ class _TransaksiSState extends State<TransaksiS> {
 
       await emspdfservice.savePdfFile("Invoice_Transactions", data);
 
-      Get.snackbar('Success', 'PDF saved successfully!');
+      Get.snackbar('Success', 'PDF saved successfully!',
+          snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       print('Error: $e');
-      Get.snackbar('Error', 'Failed to save PDF');
+      Get.snackbar('Error', 'Failed to save PDF',
+          snackPosition: SnackPosition.BOTTOM);
     }
   }
 }

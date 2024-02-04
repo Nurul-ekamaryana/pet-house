@@ -26,7 +26,8 @@ class TransaksiPage extends StatefulWidget {
 class _TransaksiPageState extends State<TransaksiPage> {
   final UsersController _usersController = Get.find<UsersController>();
   final currencyFormatter = NumberFormat.currency(locale: 'id', symbol: 'Rp ');
-  final CollectionReference transaksiCollection = FirebaseFirestore.instance.collection('transactions');
+  final CollectionReference transaksiCollection =
+      FirebaseFirestore.instance.collection('transactions');
   var searchQuery = '';
 
   DateTime? selectedDate;
@@ -57,8 +58,6 @@ class _TransaksiPageState extends State<TransaksiPage> {
     }
   }
 
-
-
   void getTransaksi() {
     transaksiCollection.snapshots().listen((snapshot) {
       if (snapshot.docs.isNotEmpty) {
@@ -79,8 +78,9 @@ class _TransaksiPageState extends State<TransaksiPage> {
 
   void filterTransaksi() {
     filteredTransaksi = transaksiList.where((transaksi) {
-      final namaPelanggan = transaksi['nama_pelanggan'].toString().toLowerCase();
-      final tanggalTransaksiString = transaksi['creatad_at'] as String;
+      final namaPelanggan =
+          transaksi['nama_pelanggan'].toString().toLowerCase();
+      final tanggalTransaksiString = transaksi['updated_at'] as String;
       final tanggalTransaksi = DateTime.parse(tanggalTransaksiString);
 
       final isTanggalSelected = selectedDate != null
@@ -92,7 +92,7 @@ class _TransaksiPageState extends State<TransaksiPage> {
       return namaPelanggan.contains(searchQuery) && isTanggalSelected;
     }).toList();
 
-        filterAndGenerateInvoices();
+    filterAndGenerateInvoices();
   }
 
   Future<void> filterAndGenerateInvoices() async {
@@ -101,7 +101,7 @@ class _TransaksiPageState extends State<TransaksiPage> {
         .toList());
   }
 
-Future<String> generateAndSaveInvoice(
+  Future<String> generateAndSaveInvoice(
       List<Map<String, dynamic>> transaksiList) async {
     try {
       final pdf = pw.Document();
@@ -112,26 +112,11 @@ Future<String> generateAndSaveInvoice(
             return pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text("Faktur Transaksi",
+                pw.Text("Transaksi Pemjualan Toko Pet House",
                     style: pw.TextStyle(
                       fontSize: 15,
                       fontWeight: pw.FontWeight.bold,
                     )),
-                if (selectedDate == null) ...[
-                  pw.Text("Data Semua Transaksi",
-                      style: pw.TextStyle(
-                        fontSize: 12,
-                        fontWeight: pw.FontWeight.bold,
-                      ))
-                ],
-                if (selectedDate != null) ...[
-                  pw.Text(
-                      "Data Tanggal: ${DateFormat('dd MMMM yyyy').format(selectedDate!)}",
-                      style: pw.TextStyle(
-                        fontSize: 12,
-                        fontWeight: pw.FontWeight.bold,
-                      ))
-                ],
                 pw.SizedBox(height: 10),
                 pw.Table.fromTextArray(
                     headerStyle: pw.TextStyle(
@@ -148,7 +133,11 @@ Future<String> generateAndSaveInvoice(
                       [
                         'No. Transaksi',
                         'Nama Pelanggan',
+                        'Nama Barang',
+                        'Harga Barang',
                         'Uang Bayar',
+                        'Total',
+                        'qty',
                         'Uang Kembali',
                         'Created At',
                       ],
@@ -156,9 +145,13 @@ Future<String> generateAndSaveInvoice(
                         [
                           transaksiData['nomor_unik'],
                           transaksiData['nama_pelanggan'],
+                          transaksiData['nama_produk'],
+                          _formatCurrency(transaksiData['harga_produk']),
                           _formatCurrency(transaksiData['uang_bayar']),
+                          _formatCurrency(transaksiData['total']),
+                          transaksiData['qty'],
                           _formatCurrency(transaksiData['uang_kembali']),
-                          transaksiData['creatad_at'],
+                          transaksiData['updated_at'],
                         ],
                     ]),
                 pw.Container(
@@ -282,7 +275,7 @@ Future<String> generateAndSaveInvoice(
               ),
               onChanged: (query) => queryProduk(query),
             ),
-           SizedBox(height: 20),
+            SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -366,29 +359,38 @@ Future<String> generateAndSaveInvoice(
                   return ListView.builder(
                     itemCount: filteredTransaksi.length,
                     itemBuilder: (context, index) {
-                      var transaksiData = filteredTransaksi[index].data() as Map<String, dynamic>;
+                      var transaksiData = filteredTransaksi[index].data()
+                          as Map<String, dynamic>;
                       String namaPembeli = transaksiData['nama_pelanggan'];
                       String namaProduk = transaksiData['nama_produk'];
                       String tanggal = transaksiData['updated_at'];
                       int qty = transaksiData['qty'];
 
-                      double hargaProduk = transaksiData['harga_produk']?.toDouble() ?? 0.0;
-                      String formattedPrice = currencyFormatter.format(hargaProduk);
+                      double hargaProduk =
+                          transaksiData['harga_produk']?.toDouble() ?? 0.0;
+                      String formattedPrice =
+                          currencyFormatter.format(hargaProduk);
 
                       double total = transaksiData['total']?.toDouble() ?? 0.0;
                       String formattedtotal = currencyFormatter.format(total);
 
-                      double nomoruniq = transaksiData['nomor_unik']?.toDouble() ?? 0.0;
+                      double nomoruniq =
+                          transaksiData['nomor_unik']?.toDouble() ?? 0.0;
                       String formattedno = currencyFormatter.format(nomoruniq);
 
-                      double uangBayar = transaksiData['uang_bayar']?.toDouble() ?? 0.0;
-                      String formattedUangBayar = currencyFormatter.format(uangBayar);
-                      
-                      double uangKembali = transaksiData['uang_kembali']?.toDouble() ?? 0.0;
-                      String formattedUangKembali = currencyFormatter.format(uangKembali);
+                      double uangBayar =
+                          transaksiData['uang_bayar']?.toDouble() ?? 0.0;
+                      String formattedUangBayar =
+                          currencyFormatter.format(uangBayar);
+
+                      double uangKembali =
+                          transaksiData['uang_kembali']?.toDouble() ?? 0.0;
+                      String formattedUangKembali =
+                          currencyFormatter.format(uangKembali);
 
                       return Card(
-                        margin: EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 2, vertical: 4),
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16.0),
@@ -402,14 +404,16 @@ Future<String> generateAndSaveInvoice(
                                 height: 90, // Adjust height as needed
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(5),
-                                  color: Colour.primary, // Adjust color as needed
+                                  color:
+                                      Colour.primary, // Adjust color as needed
                                 ),
                                 padding: EdgeInsets.all(8),
                               ),
                               SizedBox(width: 10),
                               Expanded(
                                 child: ListTile(
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 13.0),
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 10.0, vertical: 13.0),
                                   title: Text(
                                     namaPembeli,
                                     style: TextStyle(
@@ -421,7 +425,8 @@ Future<String> generateAndSaveInvoice(
                                     "$namaProduk = $formattedPrice",
                                     style: TextStyle(
                                       fontSize: 14.0,
-                                      color: const Color.fromARGB(255, 88, 88, 88),
+                                      color:
+                                          const Color.fromARGB(255, 88, 88, 88),
                                     ),
                                   ),
                                   trailing: CircleAvatar(
@@ -470,7 +475,9 @@ Future<String> generateAndSaveInvoice(
           : null,
     );
   }
-}void showMyModal(BuildContext context, Map<String, dynamic> transaksiData) {
+}
+
+void showMyModal(BuildContext context, Map<String, dynamic> transaksiData) {
   Get.bottomSheet(
     Container(
       width: double.infinity,

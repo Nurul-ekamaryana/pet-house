@@ -133,16 +133,18 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
 
   // Method to update the change in the returned amount
   void _updateUangKembali() {
-    double uangBayar = double.tryParse(
-          _uangBayarController.text.replaceAll(RegExp('[^0-9]'), ''),
-        ) ??
-        0;
-    double uangKembali = _total - uangBayar;
+  double uangBayar = double.tryParse(
+    _uangBayarController.text.replaceAll(RegExp('[^0-9]'), ''),
+  ) ?? 0;
+  int qty = int.tryParse(_qtyController.text) ?? 0;
+  double total = _hargaProduk * qty;
+  double uangKembali = total - uangBayar;
 
-    setState(() {
-      _uangKembali = uangKembali;
-    });
-  }
+  setState(() {
+    _total = total;
+    _uangKembali = uangKembali;
+  });
+}
 
   void _updatetotal() {
   int qty = int.tryParse(_qtyController.text) ?? 0;
@@ -159,14 +161,14 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
     final double uangBayar = args?['uang_bayar'] ?? 0.0;
     final int qty = args?['qty'] ?? 0.0;
     final double total = args?['total'] ?? 0.0;
-    final double uangKembali = args?['uang_kembali'] ?? 0.0;
+    // final double uangKembali = args?['uang_kembali'] ?? 0.0;
     final double nounik = args?['nomor_unik'] ?? 0.0;
 
     _namaPembeliController.text = namaPembeli;
     _uangBayarController.text = uangBayar.toStringAsFixed(0);
     _qtyController.text = qty.toStringAsFixed(0);
-    _uangKembali = _total - uangBayar;
-    _total = qty * _hargaProduk;
+    _uangKembali = uangBayar - _total;
+    _total = _hargaProduk * qty;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -383,7 +385,7 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                     ),
                   ),
                   Text(
-                    "${_uangKembali >= 0 ? '-' : ''}${currencyFormatter.format(_uangKembali.abs())}",
+                    "${_uangKembali >= 0 ? '' : ''}${currencyFormatter.format(_uangKembali.abs())}",
                     // Convert the result to a string and use currencyFormatter
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -431,12 +433,12 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                             nounik.toString(),
                             formattedDate,
                             _namaPembeliController.text,
-                            _selectedProduct.toString(),
-                            _hargaProduk.toString(),
+                             _selectedProduct.toString(),
+                            currencyFormatter.format(_hargaProduk),
                             qty.toString(),
-                            _total.toString(),
-                            uangBayar.toString(),
-                            uangKembali.toString()    
+                            currencyFormatter.format(_total),
+                            currencyFormatter.format(uangBayar),
+                            currencyFormatter.format(_uangKembali),
                             );
 
                           await emspdfservice.savePdfFile(

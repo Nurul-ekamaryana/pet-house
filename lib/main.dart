@@ -10,7 +10,6 @@ import 'package:e_petshop/pages/pagesTransaksi/transaksi.dart';
 import 'package:e_petshop/pages/pagesTransaksi/transaksi_detail.dart';
 import 'package:e_petshop/pages/pagesUsers/user_detail.dart';
 import 'package:e_petshop/pages/pagesUsers/users.dart';
-import 'package:e_petshop/pdf/home.dart';
 import 'package:e_petshop/theme/color.dart';
 import 'package:e_petshop/theme/screen.dart';
 import 'package:firebase_core/firebase_core.dart';

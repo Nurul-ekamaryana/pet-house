@@ -40,23 +40,19 @@ class EmsPdfService {
                   ),
                 ),
               ),
+              pw.Container(
+                alignment: pw.Alignment.topCenter,
+                child: pw.Center(
+                  child: pw.Text(
+                    "Struk Pembelian Toko Petshop",
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
               pw.SizedBox(height: 20),
-              pw.Divider(thickness: 2),
-              pw.SizedBox(height: 20),
-              // pw.Container(
-              //   margin: pw.EdgeInsets.symmetric(vertical: 10),
-              //   child: pw.Row(
-              //     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              //     children: [
-              //       pw.Text(
-              //         noTransaksi,
-              //         style: pw.TextStyle(
-              //           fontSize: 16,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
               pw.Container(
                 margin: pw.EdgeInsets.symmetric(vertical: 10),
                 child: pw.Row(
@@ -107,7 +103,7 @@ class EmsPdfService {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      "Nama Hewan : ",
+                      "Nama Barang : ",
                       style: pw.TextStyle(
                         fontSize: 14,
                       ),
@@ -127,13 +123,57 @@ class EmsPdfService {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      "Harga Produk : ",
+                      "Harga Barang : ",
                       style: pw.TextStyle(
                         fontSize: 14,
                       ),
                     ),
                     pw.Text(
                       hargaProduk,
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.Container(
+                margin: pw.EdgeInsets.symmetric(vertical: 5),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      "Jumlah : ",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                    pw.Text(
+                      qty,
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(
+                height: 20,
+              ),
+              pw.Divider(thickness: 2),
+              pw.Container(
+                margin: pw.EdgeInsets.symmetric(vertical: 20),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      "Total : ",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                    pw.Text(
+                      total,
                       style: pw.TextStyle(
                         fontSize: 14,
                       ),
@@ -161,63 +201,14 @@ class EmsPdfService {
                   ],
                 ),
               ),
-              pw.Container(
-                margin: pw.EdgeInsets.symmetric(vertical: 5),
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text(
-                      "Quantity : ",
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                    pw.Text(
-                      qty,
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              pw.Container(
-                margin: pw.EdgeInsets.symmetric(vertical: 5),
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text(
-                      "Total Belanja : ",
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                    pw.Text(
-                      total,
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              pw.SizedBox(
-                height: 20,
-              ),
               pw.Divider(thickness: 2),
               pw.Container(
                 margin: pw.EdgeInsets.symmetric(vertical: 20),
                 child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: pw.MainAxisAlignment.start,
                   children: [
                     pw.Text(
-                      "Uang Kembali",
-                      style: pw.TextStyle(
-                        fontSize: 16,
-                      ),
-                    ),
-                    pw.Text(
-                      uangKembali,
+                     "Uang Kembali: $uangKembali",
                       style: pw.TextStyle(
                         fontSize: 16,
                       ),
@@ -225,28 +216,13 @@ class EmsPdfService {
                   ],
                 ),
               ),
-              pw.Divider(thickness: 2),
-              // pw.Container(
-              //   margin: pw.EdgeInsets.symmetric(vertical: 20),
-              //   child: pw.Row(
-              //     mainAxisAlignment: pw.MainAxisAlignment.start,
-              //     children: [
-              //       pw.Text(
-              //         "Uang Kembali : Rp.100.000",
-              //         style: pw.TextStyle(
-              //           fontSize: 16,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
               pw.Container(
                 margin: pw.EdgeInsets.symmetric(vertical: 10),
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.center,
                   children: [
                     pw.Text(
-                      "-- Terimakasih --",
+                      "-Terima Kasih Sudah Berbelanja-",
                       style: pw.TextStyle(
                         fontWeight: pw.FontWeight.bold,
                         fontSize: 16,
