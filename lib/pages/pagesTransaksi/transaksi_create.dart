@@ -317,7 +317,7 @@ class _TransaksiCreateState extends State<TransaksiCreate> {
               ),
             ),
             Container(
-              alignment: Alignment.centerLeft,
+              alignment: Alignment.centerRight,
               margin: EdgeInsets.only(top: 10),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -326,7 +326,7 @@ class _TransaksiCreateState extends State<TransaksiCreate> {
                 ),
                 onPressed: () async {
                   String namaPembeli = _namaPembeliController.text.trim();
-int qty = int.tryParse(_qtyController.text.replaceAll(RegExp('[^0-9]'), '')) ?? 0;
+                    int qty = int.tryParse(_qtyController.text.replaceAll(RegExp('[^0-9]'), '')) ?? 0;
                       double uangBayar = double.tryParse(_uangBayarController
                               .text
                               .replaceAll(RegExp('[^0-9]'), '')) ??

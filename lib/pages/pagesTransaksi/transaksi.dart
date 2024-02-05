@@ -178,7 +178,7 @@ class _TransaksiPageState extends State<TransaksiPage> {
       final Uint8List pdfBytes = await pdf.save();
 
       final appDocumentsDirectory = await getTemporaryDirectory();
-      final pdfPath = '${appDocumentsDirectory.path}/Invoice.pdf';
+      final pdfPath = '${appDocumentsDirectory.path}/Laporan.pdf';
       final pdfFile = File(pdfPath);
       await pdfFile.writeAsBytes(pdfBytes);
       return pdfPath;
@@ -422,7 +422,7 @@ class _TransaksiPageState extends State<TransaksiPage> {
                                     ),
                                   ),
                                   subtitle: Text(
-                                    "$namaProduk = $formattedPrice",
+                                    "$namaProduk = $formattedtotal",
                                     style: TextStyle(
                                       fontSize: 14.0,
                                       color:

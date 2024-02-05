@@ -370,32 +370,32 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                 ],
               ),
             ),
-            Container(
-              margin: EdgeInsets.only(top: 10),
-              padding: EdgeInsets.all(10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Kembalian",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                      fontSize: 16,
-                    ),
-                  ),
-                  Text(
-                    "${_uangKembali >= 0 ? '' : ''}${currencyFormatter.format(_uangKembali.abs())}",
-                    // Convert the result to a string and use currencyFormatter
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Container(
+            //   margin: EdgeInsets.only(top: 10),
+            //   padding: EdgeInsets.all(10),
+              // child: Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Text(
+              //       "Kembalian",
+              //       style: TextStyle(
+              //         fontWeight: FontWeight.bold,
+              //         fontFamily: 'Poppins',
+              //         fontSize: 16,
+              //       ),
+              //     ),
+              //     Text(
+              //       "${_uangKembali >= 0 ? '' : '-'}${currencyFormatter.format(_uangKembali.abs())}",
+              //       // Convert the result to a string and use currencyFormatter
+              //       style: TextStyle(
+              //         fontWeight: FontWeight.bold,
+              //         fontFamily: 'Poppins',
+              //         fontSize: 16,
+              //       ),
+              //     ),
+              //   ],
+              // ),
+            // ),
             Container(
               alignment: Alignment.centerLeft,
               margin: EdgeInsets.only(top: 10),

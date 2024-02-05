@@ -44,7 +44,7 @@ class EmsPdfService {
                 alignment: pw.Alignment.topCenter,
                 child: pw.Center(
                   child: pw.Text(
-                    "Struk Pembelian Toko Petshop",
+                    "Jl. Sukamelang Perum.BAP",
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 16,
@@ -208,7 +208,7 @@ class EmsPdfService {
                   mainAxisAlignment: pw.MainAxisAlignment.start,
                   children: [
                     pw.Text(
-                     "Uang Kembali: $uangKembali",
+                      "Uang Kembali: $uangKembali",
                       style: pw.TextStyle(
                         fontSize: 16,
                       ),
