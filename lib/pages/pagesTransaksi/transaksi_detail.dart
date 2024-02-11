@@ -1,51 +1,65 @@
-import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_petshop/controller/logController.dart';
 import 'package:e_petshop/controller/transaksiController.dart';
+import 'package:e_petshop/model.dart/TransaksiItem.dart';
+import 'package:e_petshop/model.dart/transaksi.dart';
 import 'package:e_petshop/pdf/pdf.dart';
 import 'package:e_petshop/theme/color.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class TransaksiDetail extends StatefulWidget {
+  final int nomorUnik;
+
+  TransaksiDetail({required this.nomorUnik});
+
   @override
   State<TransaksiDetail> createState() => _TransaksiDetailState();
 }
 
 class _TransaksiDetailState extends State<TransaksiDetail> {
-  final currencyFormatter = NumberFormat.currency(locale: 'id', symbol: 'Rp');
+  final currencyFormatter =
+      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ');
   String? _selectedProduct;
+  int _qty = 0;
   List<String> produkList = [];
   double _hargaProduk = 0.0;
-  double _uangKembali = 0.0;
-  double _total = 0.0;
-  final LogController logController = LogController();
-  final EmsPdfService emspdfservice = EmsPdfService();
-  List _orders = [];
-  DateTime _currentDate = DateTime.now();
+  double _totalBelanja = 0.0;
 
-  Future<void> readJson() async {
-    final String response =
-        await rootBundle.loadString("assets/orders.json");
-    final data = await json.decode(response);
-    setState(() {
-      _orders = data['records'];
-    });
-  }
+  final TextEditingController _namaPembeliController = TextEditingController();
+  final TextEditingController _qtyController = TextEditingController();
+  final TextEditingController _uangBayarController = TextEditingController();
+  final TextEditingController _hargaProdukController = TextEditingController();
+  final TextEditingController _totalBelanjaController = TextEditingController();
+  final LogController _logController = LogController();
+  final TransaksiController _transaksiController =
+      Get.find<TransaksiController>();
+
+  List<TransactionItem> selectedProducts = [];
 
   @override
   void initState() {
     super.initState();
-    readJson();
     fetchProducts();
-    final Map<String, dynamic>? args = Get.arguments;
-    _selectedProduct = args?['nama_produk'] ?? null;
-    if (_selectedProduct != null) {
-      fetchprodukPrice(_selectedProduct);
+    fetchData();
+  }
+
+  void fetchData() async {
+    try {
+      Transaksi transaksi =
+          await _transaksiController.getTransaksiByNomorUnik(widget.nomorUnik);
+
+      setState(() {
+        _namaPembeliController.text = transaksi.nama_pelanggan;
+        _uangBayarController.text = transaksi.uang_bayar.toStringAsFixed(0);
+        _totalBelanjaController.text =
+            currencyFormatter.format(transaksi.total_belanja);
+        selectedProducts = transaksi.items;
+      });
+    } catch (e) {
+      print('Error fetching data for update: $e');
     }
-    _updateUangKembali(); // Call _updateUangKembali in initState
   }
 
   Future<void> fetchProducts() async {
@@ -54,124 +68,38 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
 
     setState(() {
       produkList = querySnapshot.docs
-          .map((doc) => doc['nama_produk'])
-          .toList()
-          .cast<String>();
+          .map((doc) => doc['nama_produk'] as String)
+          .toList();
     });
   }
 
-  Future<void> fetchprodukPrice(String? selectedProduk) async {
-  if (selectedProduk != null) {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('products')
-        .where('nama_produk', isEqualTo: selectedProduk)
-        .get();
+  Future<void> fetchProdukHarga(String? selectedProduk) async {
+    if (selectedProduk != null) {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .where('nama_produk', isEqualTo: selectedProduk)
+          .get();
 
-    if (querySnapshot.docs.isNotEmpty) {
-      double hargaProduk = querySnapshot.docs.first['harga_produk'];
+      if (querySnapshot.docs.isNotEmpty) {
+        double hargaProduk = querySnapshot.docs.first['harga_produk'];
 
-      setState(() {
-        _hargaProduk = hargaProduk;
-        _hargaProdukController.text = currencyFormatter.format(hargaProduk);
-      });
-    }
-  } else {
-    setState(() {
-     _hargaProduk = 0.0;
-        _hargaProdukController.text = '';
-        _uangKembali = 0.0;
-    });
-  }
-}
-
-
-  final TextEditingController _namaPembeliController = TextEditingController();
-  final TextEditingController _uangBayarController = TextEditingController();
-  final TextEditingController _qtyController = TextEditingController();
-  final TextEditingController _hargaProdukController = TextEditingController();
-  final TransaksiController _transaksiController =
-      Get.put(TransaksiController());
-
-  Future<void> updateTransaction() async {
-    String id = Get.arguments['id'];
-    String namaPembeli = _namaPembeliController.text.trim();
-    double uangBayar = double.tryParse(
-            _uangBayarController.text.replaceAll(RegExp('[^0-9]'), '')) ??
-        0;
-        int qty = int.tryParse(_qtyController.text.replaceAll(RegExp('[^0-9]'), '')) ?? 0;
-    double uangKembali = _total - uangBayar;
-    double total = _hargaProduk * qty;
-
-    if (_selectedProduct != null &&
-        uangBayar > _hargaProduk &&
-        namaPembeli.isNotEmpty) {
-      await _transaksiController.updateTransaksi(
-          id,
-          namaPembeli,
-          _selectedProduct!,
-          _hargaProduk,
-          uangBayar,
-          qty,
-          total,
-          uangKembali);
-
-      _namaPembeliController.clear();
-      _uangBayarController.clear();
-      _hargaProdukController.clear();
-      _qtyController.clear();
-      setState(() {
-        _selectedProduct = null;
-        _uangKembali = uangKembali;
-      });
-
-      Get.back();
-      Get.snackbar('Success', 'Transaction updated successfully!');
+        setState(() {
+          _hargaProduk = hargaProduk;
+          _hargaProdukController.text = currencyFormatter.format(hargaProduk);
+        });
+      }
     } else {
-      Get.snackbar('Failed', 'Failed to update transaction');
+      setState(() {
+        _hargaProduk = 0.0;
+        _hargaProdukController.text = '';
+      });
     }
   }
 
-  // Method to update the change in the returned amount
-  void _updateUangKembali() {
-  double uangBayar = double.tryParse(
-    _uangBayarController.text.replaceAll(RegExp('[^0-9]'), ''),
-  ) ?? 0;
-  int qty = int.tryParse(_qtyController.text) ?? 0;
-  double total = _hargaProduk * qty;
-  double uangKembali = total - uangBayar;
-
-  setState(() {
-    _total = total;
-    _uangKembali = uangKembali;
-  });
-}
-
-  void _updatetotal() {
-  int qty = int.tryParse(_qtyController.text) ?? 0;
-   double total = _hargaProduk * qty;
-    setState(() {
-      _total = total;
-    });
-  }
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic>? args = Get.arguments;
-    final String id = args?['id'] ?? '';
-    final String namaPembeli = args?['nama_pelanggan'] ?? '';
-    final double uangBayar = args?['uang_bayar'] ?? 0.0;
-    final int qty = args?['qty'] ?? 0.0;
-    final double total = args?['total'] ?? 0.0;
-    // final double uangKembali = args?['uang_kembali'] ?? 0.0;
-    final double nounik = args?['nomor_unik'] ?? 0.0;
-
-    _namaPembeliController.text = namaPembeli;
-    _uangBayarController.text = uangBayar.toStringAsFixed(0);
-    _qtyController.text = qty.toStringAsFixed(0);
-    _uangKembali = uangBayar - _total;
-    _total = _hargaProduk * qty;
-
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colour.primary,
@@ -213,193 +141,218 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
         ),
       ),
       body: SingleChildScrollView(
- child: Container(
-        color: Colour.b,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            TextField(
-              controller: _namaPembeliController,
-              decoration: InputDecoration(
-                hintText: 'Exm.Nurul Eka',
-                label: Text(
-                  'Nama Pembeli',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
+        child: Container(
+          color: Colour.b,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              TextField(
+                controller: _namaPembeliController,
+                decoration: InputDecoration(
+                  hintText: 'Exm.Nurul Eka',
+                  label: Text(
+                    'Nama Pembeli',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: Colour.secondary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
                   ),
                 ),
-                filled: true,
-                fillColor: Colour.secondary,
-                border: OutlineInputBorder(
+              ),
+              SizedBox(height: 20),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colour.secondary,
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
+                ),
+                width: double.infinity,
+                padding: EdgeInsets.all(10),
+                height: 50,
+                child: DropdownButton<String>(
+                  hint: Text('Pilih Produk'),
+                  value: _selectedProduct,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedProduct = newValue;
+                      fetchProdukHarga(newValue);
+                      _selectedProductChanged(_selectedProduct, _qty);
+                    });
+                  },
+                  items: produkList.map<DropdownMenuItem<String>>(
+                    (String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    },
+                  ).toList(),
                 ),
               ),
-            ),
-            SizedBox(height: 20),
-            Container(
-              decoration: BoxDecoration(
-                color: Colour.secondary,
-                borderRadius: BorderRadius.circular(10),
+              SizedBox(height: 20),
+              TextField(
+                controller: _hargaProdukController,
+                enabled: false,
+                decoration: InputDecoration(
+                  hintText: 'Exm. Rp. 100.000',
+                  label: Text(
+                    'Harga Produk',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: Colour.secondary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
               ),
-              width: double.infinity,
-              padding: EdgeInsets.all(10),
-              height: 50,
-              child: DropdownButton<String>(
-                hint: Text('Pilih Produk'),
-                value: _selectedProduct,
-                onChanged: (String? newValue) {
+              SizedBox(height: 20),
+              TextField(
+                controller: _qtyController,
+                onChanged: (String newValue) {
                   setState(() {
-                    _selectedProduct = newValue;
-                    fetchprodukPrice(newValue);
+                    _qty = int.tryParse(newValue) ?? 0;
+                    _selectedProductChanged(_selectedProduct, _qty);
                   });
                 },
-                items: produkList.map<DropdownMenuItem<String>>(
-                  (String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  },
-                ).toList(),
-              ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _hargaProdukController,
-              enabled: false,
-              decoration: InputDecoration(
-                hintText: 'Exm. Rp. 100.000',
-                label: Text(
-                  'Harga Produk',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                filled: true,
-                fillColor: Colour.secondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _qtyController,
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
-                // Panggil _updateUangKembali saat nilai berubah
-                _updatetotal();
-              },
-              decoration: InputDecoration(
-                hintText: 'Exm. Rp. 100.000',
-                label: Text(
-                  'QTY',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                filled: true,
-                fillColor: Colour.secondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _uangBayarController,
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
-                // Panggil _updateUangKembali saat nilai berubah
-                _updateUangKembali();
-              },
-              decoration: InputDecoration(
-                hintText: 'Exm. Rp. 100.000',
-                label: Text(
-                  'Uang Bayar',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                filled: true,
-                fillColor: Colour.secondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 10),
-              padding: EdgeInsets.all(10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Total Belanja",
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: 'Exm. 50',
+                  label: Text(
+                    'QTY',
                     style: TextStyle(
+                      color: Colors.black,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
                       fontSize: 16,
+                      fontFamily: 'Poppins',
                     ),
                   ),
-                  Text(
-                    "${_total >= 0 ? '' : '-'}${currencyFormatter.format(_total.abs())}",
-                    // Convert the result to a string and use currencyFormatter
+                  filled: true,
+                  fillColor: Colour.secondary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              selectedProducts.isNotEmpty
+                  ? Container(
+                      height: 100,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: selectedProducts.map((product) {
+                            return Container(
+                              margin: EdgeInsets.only(bottom: 10),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "${product.nama_produk} - ${product.qty} - ${currencyFormatter.format(product.harga_produk)}",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                        Text(
+                                          "${currencyFormatter.format(product.totalProduk)}",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        selectedProducts.remove(product);
+                                        calculateTotalBelanja();
+                                      });
+                                    },
+                                    icon: Icon(Icons.close),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    )
+                  : Container(),
+              SizedBox(height: 20),
+              TextField(
+                // readOnly: true,
+                controller: _uangBayarController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: 'Exm. Rp. 100.000',
+                  label: Text(
+                    'Uang Bayar',
                     style: TextStyle(
+                      color: Colors.black,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
                       fontSize: 16,
+                      fontFamily: 'Poppins',
                     ),
                   ),
-                ],
+                  filled: true,
+                  fillColor: Colour.secondary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
               ),
-            ),
-            // Container(
-            //   margin: EdgeInsets.only(top: 10),
-            //   padding: EdgeInsets.all(10),
-              // child: Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //   children: [
-              //     Text(
-              //       "Kembalian",
-              //       style: TextStyle(
-              //         fontWeight: FontWeight.bold,
-              //         fontFamily: 'Poppins',
-              //         fontSize: 16,
-              //       ),
-              //     ),
-              //     Text(
-              //       "${_uangKembali >= 0 ? '' : '-'}${currencyFormatter.format(_uangKembali.abs())}",
-              //       // Convert the result to a string and use currencyFormatter
-              //       style: TextStyle(
-              //         fontWeight: FontWeight.bold,
-              //         fontFamily: 'Poppins',
-              //         fontSize: 16,
-              //       ),
-              //     ),
-              //   ],
-              // ),
-            // ),
-            Container(
-              alignment: Alignment.centerLeft,
-              margin: EdgeInsets.only(top: 10),
-              child: Row(
+              Container(
+                margin: EdgeInsets.only(top: 10),
+                padding: EdgeInsets.all(10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Total Belanja",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Poppins',
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      "${_totalBelanjaController.text}",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Poppins',
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ElevatedButton(
@@ -409,8 +362,47 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                       backgroundColor: Colour.primary,
                     ),
                     onPressed: () async {
-                      updateTransaction();
-                         _addLog('update transactions');
+                      String namaPelanggan = _namaPembeliController.text.trim();
+                      double uangBayar = double.tryParse(_uangBayarController
+                              .text
+                              .replaceAll(RegExp('[^0-9]'), '')) ??
+                          0;
+                      double totalBelanja = _totalBelanja;
+                      String updatedat = DateTime.now().toString();
+                      double uangKembali = uangBayar - totalBelanja;
+
+                      if (selectedProducts.isNotEmpty &&
+                          uangBayar > 0 &&
+                          namaPelanggan.isNotEmpty &&
+                          uangBayar >= _totalBelanja) {
+                        List<TransactionItem> items =
+                            selectedProducts.map((product) {
+                          return TransactionItem(
+                            id_produk: product.id_produk,
+                            nama_produk: product.nama_produk,
+                            harga_produk: product.harga_produk,
+                            qty: product.qty,
+                            totalProduk: product.totalProduk,
+                          );
+                        }).toList();
+
+                        await _transaksiController.updateTransaksi(
+                          widget.nomorUnik,
+                          namaPelanggan,
+                          items,
+                          uangBayar,
+                          totalBelanja,
+                          uangKembali,
+                          updatedat,
+                        );
+
+                        _addLog("Transaksi updated");
+                        Get.back();
+                        Get.snackbar(
+                            'Success', 'Transaction updated successfully!');
+                      } else {
+                        Get.snackbar('Failed', 'Failed to update transaction');
+                      }
                     },
                     child: Text(
                       'Submit',
@@ -424,34 +416,13 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                     style: ElevatedButton.styleFrom(
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      backgroundColor: Colors.amber,
+                      backgroundColor: Color.fromARGB(255, 65, 138, 31),
                     ),
-                   onPressed: () async {
-                        try {
-                              String formattedDate = DateFormat('dd-MM-yyyy').format(_currentDate);
-                          final data = await emspdfservice.generateEMSPDF(
-                            nounik.toString(),
-                            formattedDate,
-                            _namaPembeliController.text,
-                             _selectedProduct.toString(),
-                            currencyFormatter.format(_hargaProduk),
-                            qty.toString(),
-                            currencyFormatter.format(_total),
-                            currencyFormatter.format(uangBayar),
-                            currencyFormatter.format(_uangKembali),
-                            );
-
-                          await emspdfservice.savePdfFile(
-                              "Invoice_Transactions", data);
-                          _addLog("Mencetak Struk");
-                          Get.snackbar('Success', 'PDF saved successfully!');
-                        } catch (e) {
-                          print('Error: $e');
-                          Get.snackbar('Error', 'Failed to save PDF');
-                        }
-                      },
+                    onPressed: () async {
+                      await _printReceipt(currencyFormatter);
+                    },
                     child: Text(
-                      'print',
+                      'Struk',
                       style: TextStyle(
                         color: Colors.white,
                         fontFamily: 'Poppins',
@@ -459,65 +430,139 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                     ),
                   ),
                   ElevatedButton(
-                  onPressed: () async {
-                    bool confirmDelete = await showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text("Konfirmasi"),
-                          content: Text("Apakah Anda yakin ingin menghapus produk ini?"),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop(true); // User confirms deletion
-                              },
-                              child: Text("Ya"),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop(false); // User cancels deletion
-                              },
-                              child: Text("Tidak"),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-
-                    if (confirmDelete == true) {
-                      bool success = await _transaksiController.deleteTransaksi(id);
+                    style: ElevatedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () async {
+                      bool success = await _transaksiController
+                          .deleteTransaksi(widget.nomorUnik);
                       if (success) {
-                        _transaksiController.shouldUpdate.value = true;
-                        Get.back(); // Kembali ke halaman produk
-                        _addLog("menghapus transaksi");
-                        Get.snackbar('Success', 'Berhasil delete');
+                        Get.back();
+                        Get.snackbar(
+                            'Success', 'Transaction deleted successfully!');
+                        _addLog("Menhapus Transaksi");
                       } else {
                         Get.snackbar('Failed', 'Failed to delete transaction');
                       }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    },
+                    child: Text(
+                      'Delete',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
                   ),
-                  child: Text(
-                    "Hapus",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
 
-Future<void> _addLog(String message) async {
+  Future<void> _printReceipt(NumberFormat currencyFormatter) async {
     try {
-      await logController
-          .addLog(message); // Menambahkan log saat tombol ditekan
+      Transaksi transaksi = await _fetchTransaksiData(widget.nomorUnik);
+      EmsPdfService emspdfservice = EmsPdfService();
+      double uang_bayar = double.tryParse(_uangBayarController.text.replaceAll(RegExp('[^0-9]'), '')) ?? 0;
+      // Buat list of strings untuk menyimpan data transaksi yang akan ditampilkan di PDF
+      List<String> transactionItems = selectedProducts
+          .map((item) =>
+              '${item.nama_produk} = ${item.qty} x ${currencyFormatter.format(item.harga_produk)}')
+          .toList();
+
+      // Buat list of strings untuk menyimpan jumlah dari setiap produk
+      List<String> totalProduk = selectedProducts
+          .map((item) => '${currencyFormatter.format(item.totalProduk)}')
+          .toList();
+          
+      double uangKembali = uang_bayar - _totalBelanja;
+      // Generate PDF dengan data yang sudah disiapkan
+      final data = await emspdfservice.generateEMSPDF(
+        "${transaksi.nomor_unik}",
+        DateTime.now().toString(),
+        _namaPembeliController.text,
+        transactionItems.join('\n'),
+        totalProduk.join('\n'),
+        currencyFormatter.format(_totalBelanja),
+        currencyFormatter.format(uang_bayar),
+        currencyFormatter.format(uangKembali),
+      );
+      // Save the PDF file
+      await emspdfservice.savePdfFile("Struk", data);
+      Get.snackbar('Success', 'Struk Behasil!!',
+          snackPosition: SnackPosition.TOP);
+    } catch (e) {
+      print('Error: $e');
+      Get.snackbar('Error', 'Failed to save Struk',
+          snackPosition: SnackPosition.TOP);
+    }
+  }
+
+  Future<Transaksi> _fetchTransaksiData(int nomorUnik) async {
+    try {
+      Transaksi transaksi =
+          await _transaksiController.getTransaksiByNomorUnik(nomorUnik);
+      return transaksi;
+    } catch (e) {
+      print('Error fetching transaction data: $e');
+      rethrow;
+    }
+  }
+
+  void calculateTotalBelanja() {
+    double totalBelanja =
+        selectedProducts.fold(0.0, (sum, product) => sum + product.totalProduk);
+    setState(() {
+      _totalBelanja = totalBelanja;
+      _totalBelanjaController.text = currencyFormatter.format(totalBelanja);
+    });
+  }
+
+  void addSelectedProductToContainer(int qty) {
+    if (_selectedProduct != null && qty > 0) {
+      double totalBelanja = _hargaProduk * qty;
+
+      TransactionItem newProduct = TransactionItem(
+        id_produk: _selectedProduct!,
+        nama_produk: _selectedProduct!,
+        harga_produk: _hargaProduk,
+        qty: qty,
+        totalProduk: totalBelanja,
+      );
+
+      setState(() {
+        selectedProducts.add(newProduct);
+        calculateTotalBelanja();
+        _clearFormFields();
+      });
+    }
+  }
+
+  void _clearFormFields() {
+    setState(() {
+      _selectedProduct = null;
+      _qtyController.clear();
+      _hargaProdukController.clear();
+      _qty = 0;
+    });
+  }
+
+  void _selectedProductChanged(String? selectedProduct, int qty) {
+    setState(() {
+      _selectedProduct = selectedProduct;
+      fetchProdukHarga(selectedProduct);
+      addSelectedProductToContainer(qty);
+    });
+  }
+
+  void _addLog(String activity) {
+    try {
+      _logController.addLog(activity);
       print('Log added successfully!');
     } catch (e) {
       print('Failed to add log: $e');

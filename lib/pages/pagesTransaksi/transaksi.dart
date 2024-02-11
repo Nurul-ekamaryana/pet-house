@@ -2,14 +2,12 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_petshop/controller/usersContoller.dart';
-import 'package:e_petshop/pages/pagesTransaksi/transaksiL.dart';
 import 'package:e_petshop/pages/pagesTransaksi/transaksi_create.dart';
 import 'package:e_petshop/pages/pagesTransaksi/transaksi_detail.dart';
 import 'package:e_petshop/theme/color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:open_file/open_file.dart';
 import 'package:open_file/open_file.dart';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
@@ -128,30 +126,36 @@ class _TransaksiPageState extends State<TransaksiPage> {
                       color: PdfColors.grey300,
                       border: pw.TableBorder.all(),
                     ),
-                    headerHeight: 25,
+                    headerHeight: 30,
                     data: [
                       [
-                        'No. Transaksi',
-                        'Nama Pelanggan',
+                        'No.Transaksi',
+                        'Nama Pembeli',
                         'Nama Barang',
                         'Harga Barang',
-                        'Uang Bayar',
-                        'Total',
                         'qty',
+                        'Total Produk',
+                        'Uang Bayar',
+                        'Total Belanja',
                         'Uang Kembali',
-                        'Created At',
+                        'Tanggal',
                       ],
                       for (var transaksiData in transaksiList)
                         [
                           transaksiData['nomor_unik'],
                           transaksiData['nama_pelanggan'],
-                          transaksiData['nama_produk'],
-                          _formatCurrency(transaksiData['harga_produk']),
+                          transaksiData['items']
+                              .map((item) => item['nama_produk']),
+                          transaksiData['items'].map(
+                              (item) => _formatCurrency(item['harga_produk'])),
+                          transaksiData['items'].map((item) => item['qty']),
+                          transaksiData['items'].map(
+                              (item) => _formatCurrency(item['totalProduk'])),
                           _formatCurrency(transaksiData['uang_bayar']),
-                          _formatCurrency(transaksiData['total']),
-                          transaksiData['qty'],
+                          _formatCurrency(transaksiData['total_belanja']),
                           _formatCurrency(transaksiData['uang_kembali']),
-                          transaksiData['updated_at'],
+                          DateFormat('MMMM dd, yyyy').format(DateTime.parse(
+                              transaksiData['updated_at'] as String)),
                         ],
                     ]),
                 pw.Container(
@@ -178,7 +182,7 @@ class _TransaksiPageState extends State<TransaksiPage> {
       final Uint8List pdfBytes = await pdf.save();
 
       final appDocumentsDirectory = await getTemporaryDirectory();
-      final pdfPath = '${appDocumentsDirectory.path}/Laporan.pdf';
+      final pdfPath = '${appDocumentsDirectory.path}/Laporan Transaksi.pdf';
       final pdfFile = File(pdfPath);
       await pdfFile.writeAsBytes(pdfBytes);
       return pdfPath;
@@ -196,13 +200,13 @@ class _TransaksiPageState extends State<TransaksiPage> {
 
   // INCOME
   double calculateTotalBelanja(List<Map<String, dynamic>> transaksiList) {
-    double harga_produk = 0;
+    double total_belanja = 0;
 
     for (var transaksiData in transaksiList) {
-      harga_produk += (transaksiData['harga_produk'] ?? 0.0);
+      total_belanja += (transaksiData['total_belanja'] ?? 0.0);
     }
 
-    return harga_produk;
+    return total_belanja;
   }
 
   @override
@@ -362,32 +366,12 @@ class _TransaksiPageState extends State<TransaksiPage> {
                       var transaksiData = filteredTransaksi[index].data()
                           as Map<String, dynamic>;
                       String namaPembeli = transaksiData['nama_pelanggan'];
-                      String namaProduk = transaksiData['nama_produk'];
-                      String tanggal = transaksiData['updated_at'];
-                      int qty = transaksiData['qty'];
-
-                      double hargaProduk =
-                          transaksiData['harga_produk']?.toDouble() ?? 0.0;
-                      String formattedPrice =
-                          currencyFormatter.format(hargaProduk);
-
-                      double total = transaksiData['total']?.toDouble() ?? 0.0;
-                      String formattedtotal = currencyFormatter.format(total);
-
-                      double nomoruniq =
-                          transaksiData['nomor_unik']?.toDouble() ?? 0.0;
-                      String formattedno = currencyFormatter.format(nomoruniq);
-
-                      double uangBayar =
-                          transaksiData['uang_bayar']?.toDouble() ?? 0.0;
-                      String formattedUangBayar =
-                          currencyFormatter.format(uangBayar);
-
-                      double uangKembali =
-                          transaksiData['uang_kembali']?.toDouble() ?? 0.0;
-                      String formattedUangKembali =
-                          currencyFormatter.format(uangKembali);
-
+                      String tanggal = transaksiData['updated_at'] as String;
+                      String formattedDate = '';
+                      if (tanggal != null) {
+                        DateTime dateTime = DateTime.parse(tanggal);
+                        formattedDate = DateFormat('MMMM dd, yyyy').format(dateTime);
+                      }
                       return Card(
                         margin:
                             EdgeInsets.symmetric(horizontal: 2, vertical: 4),
@@ -422,32 +406,31 @@ class _TransaksiPageState extends State<TransaksiPage> {
                                     ),
                                   ),
                                   subtitle: Text(
-                                    "$namaProduk = $formattedtotal",
+                                    "$formattedDate",
                                     style: TextStyle(
                                       fontSize: 14.0,
                                       color:
                                           const Color.fromARGB(255, 88, 88, 88),
                                     ),
                                   ),
-                                  trailing: CircleAvatar(
-                                    child: Icon(
-                                      Icons.edit,
-                                      color: Colour.primary,
-                                      size: 28.0,
-                                    ),
-                                  ),
+                                  trailing: currentUserRole == UserRole.Admin
+                                      ? CircleAvatar(
+                                          child: Icon(
+                                            Icons.edit,
+                                            color: Colour.primary,
+                                            size: 28.0,
+                                          ),
+                                        )
+                                      : null,
                                   onTap: () {
-                                    Get.to(() => TransaksiDetail(), arguments: {
-                                      'id': filteredTransaksi[index].id,
-                                      'nama_pelanggan': namaPembeli,
-                                      'nomor_unik': nomoruniq,
-                                      'nama_produk': namaProduk,
-                                      'qty': qty,
-                                      'total': total,
-                                      'uang_bayar': uangBayar,
-                                      'uang_kembali': uangKembali,
-                                      'updated_at': tanggal,
-                                    });
+                                    if (currentUserRole == UserRole.Admin) {
+                                      int nomorUnik =
+                                          transaksiData['nomor_unik'] as int ??
+                                              0;
+                                      Get.to(() => TransaksiDetail(
+                                            nomorUnik: nomorUnik,
+                                          ));
+                                    }
                                   },
                                 ),
                               ),
@@ -475,134 +458,4 @@ class _TransaksiPageState extends State<TransaksiPage> {
           : null,
     );
   }
-}
-
-void showMyModal(BuildContext context, Map<String, dynamic> transaksiData) {
-  Get.bottomSheet(
-    Container(
-      width: double.infinity,
-      height: 600.0,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16.0),
-          topRight: Radius.circular(16.0),
-        ),
-      ),
-      padding: EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Text(
-            "Detail Transaksi",
-            style: TextStyle(
-              fontSize: 20.0,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Poppins',
-            ),
-          ),
-          buildDetailRow("No. Transaksi", transaksiData['nomor_unik']),
-          buildDetailRow("Tgl. Transaksi", transaksiData['createdat']),
-          buildDetailRow("Nama Pelanggan", transaksiData['namaPelanggan']),
-          buildDetailRow("Total Belanja", transaksiData['totalBelanja']),
-          buildDetailRow("Uang Bayar", transaksiData['uangBayar']),
-          buildDetailRow("Uang Kembali", transaksiData['uangKembali']),
-          SizedBox(height: 16.0),
-          Container(
-            width: double.infinity,
-            height: 100.0,
-            child: SingleChildScrollView(
-              child: Container(
-                margin: EdgeInsets.only(bottom: 10),
-                child: Container(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (var item in transaksiData['items'])
-                        buildProductDetailRow(item),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colour.primary,
-              ),
-              onPressed: () {
-                Get.back();
-              },
-              child: Text('Tutup',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold)),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget buildDetailRow(String label, dynamic value) {
-  final currencyFormatter =
-      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ');
-  String formattedValue = label == 'No. Transaksi'
-      ? (value ?? '').toString()
-      : (value is num ? currencyFormatter.format(value) : value ?? '')
-          .toString();
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text(
-        label,
-        style: TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      Text(
-        formattedValue,
-        style: TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    ],
-  );
-}
-
-Widget buildProductDetailRow(Map<String, dynamic> item) {
-  final currencyFormatter =
-      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ');
-
-  String formattedPrice = currencyFormatter.format(item['hargaProduk'] ?? 0.0);
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text(
-        "${item['nama_produk']}",
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Poppins',
-        ),
-      ),
-      Text(
-        "Total: $formattedPrice",
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Poppins',
-        ),
-      )
-    ],
-  );
 }

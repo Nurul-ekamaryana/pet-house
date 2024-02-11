@@ -3,6 +3,7 @@ import 'package:e_petshop/theme/color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:intl/intl.dart';
 
 class LogPage extends StatefulWidget {
   const LogPage({super.key});
@@ -110,11 +111,12 @@ class _LogPageState extends State<LogPage> {
                   final filteredlogs = searchQuery.isEmpty
                       ? logs
                       : logs.where((logs) {
-                          final name =
-                              logs['username'].toString().toLowerCase();
+                                          final name = logs['username'].toString().toLowerCase();
+                        final activity = logs['activity'].toString().toLowerCase();
 
-                          return name.contains(searchQuery);
-                        }).toList();
+                        return name.contains(searchQuery) || activity.contains(searchQuery);
+                      }).toList();
+                      
                   if (filteredlogs.isEmpty) {
                     return Center(
                       child: Text(
@@ -135,7 +137,12 @@ class _LogPageState extends State<LogPage> {
                           filteredlogs[index].data() as Map<String, dynamic>;
                       String name = logsData['username'];
                       String activity = logsData['activity'];
-                      String tanggal = logsData['created_at'];
+                      String tanggal = logsData['created_at'] as String;
+                      String formattedDate = '';
+                      if (tanggal != null) {
+                        DateTime dateTime = DateTime.parse(tanggal);
+                        formattedDate = DateFormat('MMMM dd, yyyy').format(dateTime);
+                      }
 
                       return Card(
                         margin:
@@ -166,14 +173,14 @@ class _LogPageState extends State<LogPage> {
                                     vertical: 13.0,
                                   ),
                                   title: Text(
-                                    '$name -> $activity',
+                                    '$name - $activity',
                                     style: TextStyle(
                                       fontSize: 18.0,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   subtitle: Text(
-                                    tanggal,
+                                    formattedDate,
                                     style: TextStyle(
                                       fontSize: 14.0,
                                       color:

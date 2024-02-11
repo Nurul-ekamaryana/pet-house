@@ -87,7 +87,7 @@ class UsersController extends GetxController {
         ElevatedButton(
           onPressed: () async {
             await FirebaseAuth.instance.signOut();
-            Get.offNamed('/splash');
+            Get.offNamed('/login');
             Get.snackbar('Sign Out', 'You have been signed out');
           },
           child: Text("Ya"),
@@ -101,6 +101,7 @@ class UsersController extends GetxController {
     try {
       Users newUser = Users(
         password: password,
+      
         role: role,
         nama: nama,
         username: username,
@@ -155,7 +156,7 @@ class UsersController extends GetxController {
       await _firestore.collection('users').doc(id).delete();
       return true;
     } catch (e) {
-      print('Error deleting book: $e');
+      print('Error deleting produk: $e');
       return false;
     }
   }
@@ -165,7 +166,7 @@ class UsersController extends GetxController {
       QuerySnapshot querySnapshot = await _firestore.collection('users').get();
       return querySnapshot.size;
     } catch (e) {
-      print('Error counting books: $e');
+      print('Error counting produk: $e');
       return 0;
     }
   }

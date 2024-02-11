@@ -130,9 +130,11 @@ class _ProdukPageState extends State<ProdukPage> {
                 final filteredProducts = searchQuery.isEmpty
                     ? products
                     : products.where((produk) {
-                        final title =
+                        final nama =
                             produk['nama_produk'].toString().toLowerCase();
-                        return title.contains(searchQuery);
+                        final harga =
+                            produk['harga_produk'].toString().toLowerCase();
+                        return nama.contains(searchQuery) || harga.contains(searchQuery);
                       }).toList();
                 if (filteredProducts.isEmpty) {
                   return Center(
@@ -166,7 +168,6 @@ class _ProdukPageState extends State<ProdukPage> {
                           Get.to(() => ProdukDetail(), arguments: {
                             'id': filteredProducts[index].id,
                             'nama_produk': namaProduk,
-                          
                             'harga_produk': hargaProduk,
                           });
                         },

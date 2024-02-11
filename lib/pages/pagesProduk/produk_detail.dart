@@ -178,7 +178,8 @@ class ProdukDetail extends StatelessWidget {
                           _produkController.shouldUpdate.value = true;
                           Get.back();
                           _addLog("Updated Produk");
-                          Get.snackbar('Success', 'Book updated successfully!');
+                          Get.snackbar(
+                              'Success', 'produk updated successfully!');
                         } else {
                           Get.snackbar('Failed',
                               'Gagal memperbarui buku, silakan periksa kembali form.');

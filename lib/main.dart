@@ -7,7 +7,6 @@ import 'package:e_petshop/pages/pageLog/log.dart';
 import 'package:e_petshop/pages/pagesProduk/produk.dart';
 import 'package:e_petshop/pages/pagesProduk/produk_create.dart';
 import 'package:e_petshop/pages/pagesTransaksi/transaksi.dart';
-import 'package:e_petshop/pages/pagesTransaksi/transaksi_detail.dart';
 import 'package:e_petshop/pages/pagesUsers/user_detail.dart';
 import 'package:e_petshop/pages/pagesUsers/users.dart';
 import 'package:e_petshop/theme/color.dart';
@@ -40,11 +39,9 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/splash', page: () => Screenpage()),
         GetPage(name: '/login', page: () => LoginPage()),
-        // GetPage(name: '/homepdf', page: () => Home()),
         GetPage(name: '/home', page: () => MyHomePage()),
         GetPage(name: '/produk', page: () => ProdukPage()),
         GetPage(name: '/transaksi', page: () => TransaksiPage()),
-        // GetPage(name: '/transaksid', page: () => TransaksiDetail()),
         GetPage(name: '/users', page: () => UsersPage()),
         GetPage(name: '/usersdetail', page: () => UserDetail()),
         GetPage(name: '/produkcreate', page: () => ProdukCreate()),
@@ -55,19 +52,13 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  final UsersController _usersController = Get.find<UsersController>();
-  final TransaksiController _transaksiController =
-      Get.put(TransaksiController());
-  final ProdukController _produkController = Get.put(ProdukController());
-
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   final UsersController _usersController = Get.find<UsersController>();
-  final TransaksiController _transaksiController =
-      Get.put(TransaksiController());
+  final TransaksiController _transaksiController = Get.put(TransaksiController());
   final ProdukController _produkController = Get.put(ProdukController());
   final LogController _logController = Get.put(LogController());
 
@@ -120,9 +111,9 @@ class _MyHomePageState extends State<MyHomePage> {
               Text(
                 'Dashboard',
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 20.0, color: Color.fromARGB(209, 23, 37, 63)
-                ),
+                    fontFamily: 'Montserrat',
+                    fontSize: 20.0,
+                    color: Color.fromARGB(209, 23, 37, 63)),
               ),
               SizedBox(height: 16),
               FutureBuilder<int>(
@@ -147,53 +138,53 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ),
               SizedBox(height: 16),
-                 if (
-                  _usersController.getCurrentUserRole() == UserRole.Admin)
-              FutureBuilder<int>(
-                future: _produkController.countProduk(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else {
-                    int produkCount = snapshot.data ?? 0;
-                    return buildProductTile(
-                      title: "Products",
-                      subtitle: produkCount.toString(),
-                      icon: Icons.add_box_rounded,
-                      iconColor: Colour.primary,
-                      onTap: () {
-                        Get.offNamed('/produk');
-                      },
-                    );
-                  }
-                },
-              ),
+              if (_usersController.getCurrentUserRole() == UserRole.Admin)
+                FutureBuilder<int>(
+                  future: _produkController.countProduk(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else {
+                      int produkCount = snapshot.data ?? 0;
+                      return buildProductTile(
+                        title: "Products",
+                        subtitle: produkCount.toString(),
+                        icon: Icons.add_box_rounded,
+                        iconColor: Colour.primary,
+                        onTap: () {
+                          Get.offNamed('/produk');
+                        },
+                      );
+                    }
+                  },
+                ),
               SizedBox(height: 16),
-                 if (_usersController.getCurrentUserRole() == UserRole.Admin)
-              FutureBuilder<int>(
-                future: _usersController.countUsers(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else {
-                    int usersCount = snapshot.data ?? 0;
-                    return buildProductTile(
-                      title: "Users",
-                      subtitle: usersCount.toString(),
-                      icon: Icons.group_rounded,
-                      iconColor: Colour.primary,
-                      onTap: () {
-                        Get.offNamed('/users');
-                      },
-                    );
-                  }
-                },
-              ),
+              if (_usersController.getCurrentUserRole() == UserRole.Admin)
+                FutureBuilder<int>(
+                  future: _usersController.countUsers(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else {
+                      int usersCount = snapshot.data ?? 0;
+                      return buildProductTile(
+                        title: "Users",
+                        subtitle: usersCount.toString(),
+                        icon: Icons.group_rounded,
+                        iconColor: Colour.primary,
+                        onTap: () {
+                          Get.offNamed('/users');
+                        },
+                      );
+                    }
+                  },
+                ),
               SizedBox(height: 16),
+            if (_usersController.getCurrentUserRole() == UserRole.Admin)
               FutureBuilder<int>(
                 future: _logController.countLog(),
                 builder: (context, snapshot) {
@@ -215,27 +206,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   }
                 },
               ),
-              // FutureBuilder<int>(
-              //   future: _logController.countLog(),
-              //   builder: (context, snapshot) {
-              //     if (snapshot.connectionState == ConnectionState.waiting) {
-              //       return CircularProgressIndicator();
-              //     } else if (snapshot.hasError) {
-              //       return Text('Error: ${snapshot.error}');
-              //     } else {
-              //       int produkCount = snapshot.data ?? 0;
-              //       return buildProductTile(
-              //         title: "laporan",
-              //         subtitle: produkCount.toString(),
-              //         icon: Icons.history,
-              //         iconColor: Colour.primary,
-              //         onTap: () {
-              //           Get.offNamed('/homepdf');
-              //         },
-              //       );
-              //     }
-              //   },
-              // ),
             ],
           ),
         ),

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:e_petshop/controller/logController.dart';
 import 'package:e_petshop/controller/produkController.dart';
 import 'package:e_petshop/model.dart/produk.dart';
@@ -13,8 +14,6 @@ class ProdukCreate extends StatefulWidget {
 class _ProdukCreateState extends State<ProdukCreate> {
   final ProdukController _produkController = Get.put(ProdukController());
   final TextEditingController namaController = TextEditingController();
-  // final TextEditingController jenisController = TextEditingController();
-  // final TextEditingController cirihasController = TextEditingController();
   final TextEditingController hargaController = TextEditingController();
   final LogController logController = LogController();
 
@@ -63,142 +62,101 @@ class _ProdukCreateState extends State<ProdukCreate> {
       ),
       body: SingleChildScrollView(
         child: Container(
-        color: Colour.b,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            TextField(
-              controller: namaController,
-              decoration: InputDecoration(
-                hintText: 'Ex. Kucing Orang',
-                labelText: 'Hewan',
-                labelStyle: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  fontFamily: 'Poppins',
-                ),
-                filled: true,
-                fillColor: Colour.secondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            // SizedBox(height: 12),
-            // TextField(
-            //   controller: jenisController,
-            //   decoration: InputDecoration(
-            //     hintText: 'Ex. Persia',
-            //     labelText: 'Jenis Hewan',
-            //     labelStyle: TextStyle(
-            //       color: Colors.black,
-            //       fontWeight: FontWeight.bold,
-            //       fontSize: 16,
-            //       fontFamily: 'Poppins',
-            //     ),
-            //     filled: true,
-            //     fillColor: Colour.secondary,
-            //     border: OutlineInputBorder(
-            //       borderRadius: BorderRadius.circular(10),
-            //       borderSide: BorderSide.none,
-            //     ),
-            //   ),
-            // ),
-            // SizedBox(height: 12),
-            // TextField(
-            //   controller: cirihasController,
-            //   decoration: InputDecoration(
-            //     hintText: 'Ex. Berwarna Hijau',
-            //     labelText: 'Ciri Has',
-            //     labelStyle: TextStyle(
-            //       color: Colors.black,
-            //       fontWeight: FontWeight.bold,
-            //       fontSize: 16,
-            //       fontFamily: 'Poppins',
-            //     ),
-            //     filled: true,
-            //     fillColor: Colour.secondary,
-            //     border: OutlineInputBorder(
-            //       borderRadius: BorderRadius.circular(10),
-            //       borderSide: BorderSide.none,
-            //     ),
-            //   ),
-            // ),
-            SizedBox(height: 12),
-            TextField(
-              controller: hargaController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                hintText: 'Exm. Rp. 100.000',
-                labelText: 'Harga',
-                labelStyle: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  fontFamily: 'Poppins',
-                ),
-                filled: true,
-                fillColor: Colour.secondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
+          color: Colour.b,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              TextField(
+                controller: namaController,
+                decoration: InputDecoration(
+                  hintText: 'Ex. Kucing Orang',
+                  labelText: 'Nama Produk',
+                  labelStyle: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    fontFamily: 'Poppins',
+                  ),
+                  filled: true,
+                  fillColor: Colour.secondary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 12),
-            Container(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  backgroundColor: Colour.primary,
+              SizedBox(height: 12),
+              TextField(
+                controller: hargaController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: 'Exm. Rp. 100.000',
+                  labelText: 'Harga',
+                  labelStyle: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    fontFamily: 'Poppins',
+                  ),
+                  filled: true,
+                  fillColor: Colour.secondary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
-                onPressed: () async {
-                  String nama_produk = namaController.text.trim();
-                  // String ciri_has = cirihasController.text.trim();
-                  // String jenis = jenisController.text.trim();
-                  double harga_produk =
-                      double.tryParse(hargaController.text.trim()) ?? 0.0;
+              ),
+              SizedBox(height: 12),
+              Container(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    backgroundColor: Colour.primary,
+                  ),
+                  onPressed: () async {
+                    String nama_produk = namaController.text.trim();
+                  
+                    double harga_produk =
+                        double.tryParse(hargaController.text.trim()) ?? 0.0;
 
-                  if (nama_produk.isNotEmpty &&
-                      harga_produk > 0 ) {
-                    Produk newProduk = Produk(
-                      nama_produk: nama_produk,
-                      // jenis: jenis,
-                      // ciri_has: ciri_has,
-                      harga_produk: harga_produk,
-                      created_at: DateTime.now().toString(),
-                      updated_at: DateTime.now().toString(),
-                    );
-                    bool success = await _produkController.addProduk(newProduk);
-                    if (success) {
-                      print('Produk added successfully');
-                      _produkController.shouldUpdate.value = true;
-                      Get.offNamed('/produk');
-                      _addLog('Menambah Produk');
+                    if (nama_produk.isNotEmpty && harga_produk > 0) {
+                      Produk newProduk = Produk(
+                        id: Random().nextInt(1000).toString(),
+                        nama_produk: nama_produk,
+                        harga_produk: harga_produk,
+                        created_at: DateTime.now().toString(),
+                        updated_at: DateTime.now().toString(),
+                      );
+                      bool success =
+                          await _produkController.addProduk(newProduk);
+                      if (success) {
+                        print('Produk added successfully');
+                        _produkController.shouldUpdate.value = true;
+                        Get.offNamed('/produk');
+                        _addLog('Menambah Produk');
+                      } else {
+                        print('Failed to add produk');
+                      }
                     } else {
-                      print('Failed to add produk');
+                      print('Please fill in all fields correctly');
                     }
-                  } else {
-                    print('Please fill in all fields correctly');
-                  }
-                },
-                child: Text(
-                  'Submit',
-                  style: TextStyle(color: Colors.white, fontFamily: 'Poppins'),
+                  },
+                  child: Text(
+                    'Submit',
+                    style:
+                        TextStyle(color: Colors.white, fontFamily: 'Poppins'),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
 
-   Future<void> _addLog(String activity) async {
+  Future<void> _addLog(String activity) async {
     try {
       await logController.addLog(activity);
       print('Log added successfully!');

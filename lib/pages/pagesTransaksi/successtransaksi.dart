@@ -1,59 +1,50 @@
-import 'dart:convert';
 import 'dart:typed_data';
-
-import 'package:e_petshop/controller/usersContoller.dart';
+import 'package:e_petshop/model.dart/TransaksiItem.dart';
+import 'package:e_petshop/model.dart/transaksi.dart';
 import 'package:e_petshop/pdf/pdf.dart';
 import 'package:e_petshop/theme/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:image/image.dart' as img;
+
+import '../../controller/transaksiController.dart';
 
 class TransaksiS extends StatefulWidget {
-  final int nomor_unik;
-  final String nama_pelanggan;
-  final String nama_produk;
-  final double harga_produk;
-  final double uang_bayar;
-  final int qty;
-  final double total;
-  final double uang_kembali;
-  final String created_at;
+  final String transactionId;
 
-  const TransaksiS({
-    required this.nomor_unik,
-    required this.nama_pelanggan,
-    required this.harga_produk,
-    required this.nama_produk,
-    required this.uang_bayar,
-    required this.qty,
-    required this.total,
-    required this.uang_kembali,
-    required this.created_at, 
-  });
+  TransaksiS({required this.transactionId});
 
   @override
   State<TransaksiS> createState() => _TransaksiSState();
 }
 
 class _TransaksiSState extends State<TransaksiS> {
-  final UsersController _UsersController = Get.find<UsersController>();
-  final EmsPdfService emspdfservice = EmsPdfService();
-  List _orders = [];
+  final TransaksiController _transaksiController =
+      Get.put(TransaksiController());
 
-  Future<void> readJson() async {
-    final String response = await rootBundle.loadString("assets/orders.json");
-    final data = await json.decode(response);
-    setState(() {
-      _orders = data['records'];
-    });
+  Future<Transaksi> _fetchTransaksiData(int nomorUnik) async {
+    try {
+      Transaksi transaksi =
+          await _transaksiController.getTransaksiByNomorUnik(nomorUnik);
+      return transaksi;
+    } catch (e) {
+      print('Error fetching transaction data: $e');
+      rethrow;
+    }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    readJson();
+  Future<Uint8List> loadAndProcessImage() async {
+    ByteData bytesAsset = await rootBundle.load("images/logo.png");
+    Uint8List imageBytesFromAsset = bytesAsset.buffer
+        .asUint8List(bytesAsset.offsetInBytes, bytesAsset.lengthInBytes);
+
+    return imageBytesFromAsset;
+  }
+
+  Future<Uint8List> printImageUsingPrinter() async {
+    Uint8List imageBytes = await loadAndProcessImage();
+    return imageBytes;
   }
 
   @override
@@ -124,43 +115,71 @@ class _TransaksiSState extends State<TransaksiS> {
     );
   }
 
-  Widget _buildTransactionDetails(NumberFormat currencyFormatter) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Rincian Pembelian",
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
+ Widget _buildTransactionDetails(NumberFormat currencyFormatter) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        "Rincian Pembelian",
+        style: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
         ),
-        SizedBox(height: 15),
-        _buildDetailRow("No. Struk", "${widget.nomor_unik}"),
-        _buildDetailRow("Nama Pembeli", "${widget.nama_pelanggan}"),
-        _buildDetailRow("Nama Barang", "${widget.nama_produk}"),
-        _buildDetailRow(
-          "Harga Satuan",
-          currencyFormatter.format(widget.harga_produk),
-        ),
-        _buildDetailRow("Jumlah", "${widget.qty}"),
-        _buildDetailRow(
-          "Total Harga",
-          currencyFormatter.format(widget.total),
-        ),
-        _buildDetailRow(
-          "Uang Bayar",
-          currencyFormatter.format(widget.uang_bayar),
-        ),
-        _buildDetailRow(
-          "Uang Kembali",
-          currencyFormatter.format(widget.uang_kembali),
-        ),
-      ],
-    );
-  }
+      ),
+      SizedBox(height: 15),
+      FutureBuilder<Transaksi>(
+        future: _fetchTransaksiData(int.parse(widget.transactionId)),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData) {
+            return Center(child: Text('No data available'));
+          }
+
+          Transaksi transaksi = snapshot.data!;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDetailRow("No. Struk", "${transaksi.nomor_unik}"),
+              _buildDetailRow("Nama Pembeli", "${transaksi.nama_pelanggan}"),
+              _buildDetailRow(
+                "Total Harga",
+                currencyFormatter.format(transaksi.total_belanja),
+              ),
+              _buildDetailRow(
+                "Uang Bayar",
+                currencyFormatter.format(transaksi.uang_bayar),
+              ),
+              _buildDetailRow(
+                "Uang Kembali",
+                currencyFormatter.format(transaksi.uang_kembali),
+              ),
+                Text(
+                "Transaction Items:", // Additional text here
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              Column(
+                children: transaksi.items.map((item) => buildProductDetailRow(item)).toList(),
+              ),               
+              
+            ],
+          );
+        },
+      ),
+    ],
+  );
+}
+
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
@@ -174,7 +193,7 @@ class _TransaksiSState extends State<TransaksiS> {
               fontFamily: 'Poppins',
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: const Color.fromARGB(255, 0, 0, 0),
             ),
           ),
           Text(
@@ -183,7 +202,7 @@ class _TransaksiSState extends State<TransaksiS> {
               fontFamily: 'Poppins',
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Colors.grey,
             ),
           ),
         ],
@@ -204,7 +223,7 @@ class _TransaksiSState extends State<TransaksiS> {
             await _printReceipt(currencyFormatter);
           },
           child: Text(
-            "Print",
+            "Struk",
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 18,
@@ -236,29 +255,65 @@ class _TransaksiSState extends State<TransaksiS> {
   }
 
   Future<void> _printReceipt(NumberFormat currencyFormatter) async {
-    try {
-      String formattedDate =
-          DateFormat('dd-MM-yyyy').format(DateTime.parse(widget.created_at));
-      final data = await emspdfservice.generateEMSPDF(
-        "${widget.nomor_unik}",
-        formattedDate,
-        "${widget.nama_pelanggan}",
-        "${widget.nama_produk}",
-        currencyFormatter.format(widget.harga_produk),
-        "${widget.qty}",
-        currencyFormatter.format(widget.total),
-        currencyFormatter.format(widget.uang_bayar),
-        currencyFormatter.format(widget.uang_kembali),
-      );
+  try {
+    Transaksi transaksi = await _fetchTransaksiData(int.parse(widget.transactionId));
+    EmsPdfService emspdfservice = EmsPdfService();
 
-      await emspdfservice.savePdfFile("Invoice_Transactions", data);
-
-      Get.snackbar('Success', 'PDF saved successfully!',
-          snackPosition: SnackPosition.BOTTOM);
-    } catch (e) {
-      print('Error: $e');
-      Get.snackbar('Error', 'Failed to save PDF',
-          snackPosition: SnackPosition.BOTTOM);
-    }
+    String transactionItems = transaksi.items.map((item) =>
+      '${item.nama_produk} = ${item.qty} x ${currencyFormatter.format(item.harga_produk)}'
+    ).join('\n');
+    
+    String qty = transaksi.items.map((item) =>
+      '${currencyFormatter.format(item.totalProduk)}'
+    ).join('\n');
+    final data = await emspdfservice.generateEMSPDF(
+  "${transaksi.nomor_unik}",
+   DateTime.now().toString(), // Assuming the transaction number is of String type
+  "${transaksi.nama_pelanggan}",
+  transactionItems, // Pass the prepared transaction items as a String
+  qty, // Pass the prepared transaction items as a String
+  currencyFormatter.format(transaksi.total_belanja),
+  currencyFormatter.format(transaksi.uang_bayar),
+  currencyFormatter.format(transaksi.uang_kembali),
+);
+    // Save the PDF file
+    await emspdfservice.savePdfFile("Struk", data);
+    Get.snackbar('Success', 'Struk Behasil!!',
+        snackPosition: SnackPosition.TOP);
+  } catch (e) {
+    print('Error: $e');
+    Get.snackbar('Error', 'Failed to save Struk',
+        snackPosition: SnackPosition.TOP);
   }
+}
+
+
+Widget buildProductDetailRow(TransactionItem item) {
+  final currencyFormatter =
+      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ');
+  return Container(
+    margin: EdgeInsets.symmetric(vertical: 5),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          '${item.nama_produk} x ${item.qty}',
+          style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey),
+        ),
+        Text(
+          '${currencyFormatter.format(item.totalProduk)}',
+          style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey),
+        ),
+      ],
+    ),
+  );
+}
 }

@@ -5,6 +5,7 @@ import 'package:e_petshop/theme/color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class UsersPage extends StatefulWidget {
   @override
@@ -46,7 +47,7 @@ class _UserPageState extends State<UsersPage> {
         title: Align(
           alignment: Alignment.bottomLeft,
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 4.3, left: 59.0),
+            padding: const EdgeInsets.only(bottom: 4.3, left: 85.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -128,9 +129,11 @@ class _UserPageState extends State<UsersPage> {
                 final filteredProducts = searchQuery.isEmpty
                     ? users
                     : users.where((users) {
-                        final title =
+                        final nama =
                             users['nama'].toString().toLowerCase();
-                        return title.contains(searchQuery);
+                        final role =
+                            users['role'].toString().toLowerCase();
+                        return nama.contains(searchQuery) || role.contains(searchQuery);
                       }).toList();
                 if (filteredProducts.isEmpty) {
                   return Center(
@@ -153,7 +156,7 @@ class _UserPageState extends State<UsersPage> {
                     String namaUsers = usersData['nama'];
                     String namaUsername = usersData['username'];
                     String roleUsers = usersData['role'];
-
+                    
                     return GestureDetector(
                       onTap: () {
                         Get.to(() => UserDetail(), arguments: {
@@ -224,47 +227,7 @@ class _UserPageState extends State<UsersPage> {
                             ),
                           ),
                         ),
-                      // child: Card(
-                      //   elevation: 9.0,
-                      //   color: Colors.white,
-                      //   shape: RoundedRectangleBorder(
-                      //     borderRadius: BorderRadius.circular(16.0),
-                      //   ),
-                      //   child: ListTile(
-                      //     contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0), 
-                      //     // Adjust the padding here
-                      //     title: Text(
-                      //       namaUsers,
-                      //       style: TextStyle(
-                      //         fontSize: 18.0,
-                      //         fontWeight: FontWeight.bold,
-                      //       ),
-                      //     ),
-                      //     subtitle: Text(
-                      //       roleUsers,
-                      //       style: TextStyle(
-                      //         fontSize: 14.0,
-                      //         color: Color.fromARGB(255, 82, 82, 82),
-                      //       ),
-                      //     ),
-                      //     trailing: CircleAvatar(
-                      //       child: Icon(
-                      //         Icons.edit,
-                      //         color: Colour.primary,
-                      //         size: 28.0,
-                      //       ),
-                      //     ),
-                      //     onTap: () {
-                      //       Get.to(() => UserDetail(), arguments: {
-                      //         'id': filteredProducts[index].id,
-                      //         'nama': namaUsers,
-                      //         'username': namaUsername,
-                      //         'role': roleUsers,
-                      //       });
-                      //     },
-                      //   ),
-
-                      // ),
+                     
                     );
                   },
                 );

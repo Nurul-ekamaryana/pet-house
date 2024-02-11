@@ -36,7 +36,7 @@ class LogController {
       QuerySnapshot querySnapshot = await _firestore.collection('logs').get();
       return querySnapshot.size;
     } catch (e) {
-      print('Error counting books: $e');
+      print('Error counting Produk: $e');
       return 0;
     }
   }

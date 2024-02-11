@@ -1,4 +1,3 @@
-// import 'package:bacabox/model/book.dart';
 import 'package:e_petshop/model.dart/produk.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
@@ -33,10 +32,9 @@ class ProdukController extends GetxController {
     }
   }
 
-  
-
 //Update Peoduk
-  Future<bool> updateProduk(String id, String newNamaProduk, double newHargaProduk, String updated_at) async {
+  Future<bool> updateProduk(String id, String newNamaProduk,
+      double newHargaProduk, String updated_at) async {
     try {
       await _firestore.collection('products').doc(id).update({
         'nama_produk': newNamaProduk,
@@ -59,7 +57,7 @@ class ProdukController extends GetxController {
           await _firestore.collection('products').get();
       return querySnapshot.size;
     } catch (e) {
-      print('Error counting books: $e');
+      print('Error counting produk: $e');
       return 0;
     }
   }

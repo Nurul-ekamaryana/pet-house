@@ -71,7 +71,7 @@ class _UserDetailState extends State<UserDetail> {
           title: Align(
             alignment: Alignment.bottomLeft,
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 4.3, left: 59.0),
+              padding: const EdgeInsets.only(bottom: 4.3, left: 85.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,

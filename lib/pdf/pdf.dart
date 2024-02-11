@@ -11,8 +11,7 @@ class EmsPdfService {
     String noTransaksi,
     String tanggal,
     String namaPelanggan,
-    String namaProduk,
-    String hargaProduk,
+    String transactionItems,
     String qty,
     String total,
     String uangBayar,
@@ -103,13 +102,7 @@ class EmsPdfService {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      "Nama Barang : ",
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                    pw.Text(
-                      namaProduk,
+                      "Produk:",
                       style: pw.TextStyle(
                         fontSize: 14,
                       ),
@@ -118,32 +111,11 @@ class EmsPdfService {
                 ),
               ),
               pw.Container(
-                margin: pw.EdgeInsets.symmetric(vertical: 5),
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      "Harga Barang : ",
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                    pw.Text(
-                      hargaProduk,
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              pw.Container(
-                margin: pw.EdgeInsets.symmetric(vertical: 5),
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text(
-                      "Jumlah : ",
+                      transactionItems,
                       style: pw.TextStyle(
                         fontSize: 14,
                       ),
@@ -157,6 +129,7 @@ class EmsPdfService {
                   ],
                 ),
               ),
+              
               pw.SizedBox(
                 height: 20,
               ),

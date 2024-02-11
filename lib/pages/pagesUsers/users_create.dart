@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:e_petshop/controller/logController.dart';
 import 'package:e_petshop/controller/usersContoller.dart';
 import 'package:e_petshop/theme/color.dart';
@@ -60,7 +62,7 @@ class _UserCreateState extends State<UserCreate> {
           title: Align(
             alignment: Alignment.bottomLeft,
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 4.3, left: 59.0),
+              padding: const EdgeInsets.only(bottom: 4.3, left: 80.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -86,83 +88,12 @@ class _UserCreateState extends State<UserCreate> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // TextField(
-                //   controller: namaController,
-                //   // onChanged: (value) {
-                //   //     _createUsername(value);
-                //   //   },
-                //   decoration: InputDecoration(
-                //     hintText: 'Ex. Eka Maryana',
-                //     labelText: 'Nama User',
-                //     labelStyle: TextStyle(
-                //       color: Colors.black,
-                //       fontWeight: FontWeight.bold,
-                //       fontSize: 16,
-                //       fontFamily: 'Poppins',
-                //     ),
-                //     filled: true,
-                //     fillColor: Colour.secondary,
-                //     border: OutlineInputBorder(
-                //       borderRadius: BorderRadius.circular(10),
-                //       borderSide: BorderSide.none,
-                //     ),
-                //   ),
-                // ),
                 buildField(namaController, 'Nama Users', _isObscure),
                 SizedBox(height: 20),
                 buildField(usernameController, 'Username', _isObscure),
                 SizedBox(height: 20),
                 buildPasswordField(
                     passwordController, 'Password', _obscurePassword),
-                // SizedBox(height: 20),
-                // TextField(
-                //   controller: usernameController,
-                //   // enabled: false,
-                //   decoration: InputDecoration(
-                //     hintText: 'Ex. Eka02',
-                //     labelText: 'Username',
-                //     labelStyle: TextStyle(
-                //       color: Colors.black,
-                //       fontWeight: FontWeight.bold,
-                //       fontSize: 16,
-                //       fontFamily: 'Poppins',
-                //     ),
-                //     filled: true,
-                //     fillColor: Colour.secondary,
-                //     border: OutlineInputBorder(
-                //       borderRadius: BorderRadius.circular(10),
-                //       borderSide: BorderSide.none,
-                //     ),
-                //   ),
-                // ),
-                // SizedBox(height: 20),
-                // TextField(
-                //   controller: passwordController,
-                //   obscureText: _isObscure,
-                //   decoration: InputDecoration(
-                //     suffixIcon: IconButton(
-                //       icon: Icon(
-                //           _isObscure ? Icons.visibility : Icons.visibility_off),
-                //       onPressed: togglePasswordVisibility,
-                //     ),
-                //     hintText: '***',
-                //     label: Text(
-                //       'Password',
-                //       style: TextStyle(
-                //         color: Colors.black,
-                //         fontWeight: FontWeight.bold,
-                //         fontSize: 16,
-                //         fontFamily: 'Poppins',
-                //       ),
-                //     ),
-                //     filled: true,
-                //     fillColor: Colour.secondary,
-                //     border: OutlineInputBorder(
-                //       borderRadius: BorderRadius.circular(10),
-                //       borderSide: BorderSide.none,
-                //     ),
-                //   ),
-                // ),
                 SizedBox(height: 20),
                 Container(
                   width: double.infinity,
@@ -187,7 +118,6 @@ class _UserCreateState extends State<UserCreate> {
                     }).toList(),
                   ),
                 ),
-
                 SizedBox(height: 20),
                 Container(
                   alignment: Alignment.centerRight,
@@ -208,8 +138,13 @@ class _UserCreateState extends State<UserCreate> {
                             password.isNotEmpty &&
                             name.isNotEmpty &&
                             _selectedRole != null) {
-                          _userController.register(password, _selectedRole!,
-                              name, username, created_at, updated_at);
+                          _userController.register(
+                              password,
+                              _selectedRole!,
+                              name,
+                              username,
+                              created_at,
+                              updated_at);
                           Get.back();
                           Get.snackbar('Success', 'User created successfully!');
                           _addLog('Created new user');
