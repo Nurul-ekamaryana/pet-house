@@ -6,7 +6,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 
 class LogPage extends StatefulWidget {
-  const LogPage({super.key});
+  const LogPage({Key? key}) : super(key: key);
 
   @override
   State<LogPage> createState() => _LogPageState();
@@ -27,49 +27,51 @@ class _LogPageState extends State<LogPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colour.b,
-        appBar: AppBar(
-          backgroundColor: Colour.primary,
-          toolbarHeight: 120,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(
-              bottom: Radius.circular(30),
-            ),
+      backgroundColor: Colour.b,
+      appBar: AppBar(
+        backgroundColor: Colour.primary,
+        toolbarHeight: 120,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(30),
           ),
-          leading: IconButton(
-            color: Colors.white,
-            onPressed: () {
-              Get.offNamed('/home');
-            },
-            icon: Icon(Icons.arrow_back),
-          ),
-          actions: [],
-          title: Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 4.3, left: 95.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'History',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'OpenSans',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.right,
+        ),
+        leading: IconButton(
+          color: Colors.white,
+          onPressed: () {
+            Get.offNamed('/home');
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
+        actions: [],
+        title: Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 4.3, left: 95.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'History',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'OpenSans',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
-              ),
+                  textAlign: TextAlign.right,
+                ),
+              ],
             ),
           ),
         ),
-        body: Container(
-          padding: EdgeInsets.all(20),
-          child: Column(children: [
+      ),
+      body: Container(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start, // Ubah disini
+          children: [
             TextField(
               onChanged: (value) {
                 queryProduk(value);
@@ -92,6 +94,16 @@ class _LogPageState extends State<LogPage> {
                 ),
               ),
             ),
+            SizedBox(height: 10),
+            Text(
+              'All History',
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             SizedBox(height: 20),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
@@ -111,21 +123,35 @@ class _LogPageState extends State<LogPage> {
                   final filteredlogs = searchQuery.isEmpty
                       ? logs
                       : logs.where((logs) {
-                                          final name = logs['username'].toString().toLowerCase();
-                        final activity = logs['activity'].toString().toLowerCase();
+                          final name =
+                              logs['username'].toString().toLowerCase();
+                          final activity =
+                              logs['activity'].toString().toLowerCase();
 
-                        return name.contains(searchQuery) || activity.contains(searchQuery);
-                      }).toList();
-                      
+                          return name.contains(searchQuery) ||
+                              activity.contains(searchQuery);
+                        }).toList();
+
                   if (filteredlogs.isEmpty) {
                     return Center(
-                      child: Text(
-                        'Log tidak ditemukan',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image(
+                            image: AssetImage(
+                                'images/404 Error with a cute animal-bro.png'),
+                            height: 181,
+                          ),
+                          // SizedBox(height: 20),
+                          // Text(
+                          //   'Transaksi tidak ditemukan',
+                          //   style: TextStyle(
+                          //     fontSize: 18,
+                          //     fontFamily: 'Poppins',
+                          //     fontWeight: FontWeight.bold,
+                          //   ),
+                          // ),
+                        ],
                       ),
                     );
                   }
@@ -141,7 +167,8 @@ class _LogPageState extends State<LogPage> {
                       String formattedDate = '';
                       if (tanggal != null) {
                         DateTime dateTime = DateTime.parse(tanggal);
-                        formattedDate = DateFormat('MMMM dd, yyyy').format(dateTime);
+                        formattedDate =
+                            DateFormat('MMMM dd, yyyy').format(dateTime);
                       }
 
                       return Card(
@@ -157,7 +184,8 @@ class _LogPageState extends State<LogPage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Container(
-                                height: 90, // Adjust height as needed
+                                height:
+                                    90, // Adjust height as needed
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(5),
                                   color:
@@ -183,8 +211,8 @@ class _LogPageState extends State<LogPage> {
                                     formattedDate,
                                     style: TextStyle(
                                       fontSize: 14.0,
-                                      color:
-                                          const Color.fromARGB(255, 88, 88, 88),
+                                      color: const Color.fromARGB(
+                                          255, 88, 88, 88),
                                     ),
                                   ),
                                 ),
@@ -198,7 +226,9 @@ class _LogPageState extends State<LogPage> {
                 },
               ),
             ),
-          ]),
-        ));
+          ],
+        ),
+      ),
+    );
   }
 }

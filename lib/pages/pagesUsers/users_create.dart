@@ -147,7 +147,7 @@ class _UserCreateState extends State<UserCreate> {
                               updated_at);
                           Get.back();
                           Get.snackbar('Success', 'User created successfully!');
-                          _addLog('Created new user');
+                          _addLog('Menambah user Baru');
                         } else {
                           Get.snackbar('Error', 'Please fill in all fields');
                         }

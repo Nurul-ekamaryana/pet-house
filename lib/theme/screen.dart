@@ -22,15 +22,6 @@ class Screenpage extends StatelessWidget {
                 image: AssetImage('images/4.png'),
                 height: 150,
               ),
-              SizedBox(height: 16),
-              // Text(
-              //   "PET-HOUSE",
-              //   style: TextStyle(
-              //     color: Color.fromARGB(255, 36, 34, 63),
-              //     fontWeight: FontWeight.bold,
-              //     fontSize: 32,
-              //   ),
-              // ),
             ],
           ),
         ),

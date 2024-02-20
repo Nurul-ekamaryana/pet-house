@@ -88,8 +88,8 @@ class _TransaksiSState extends State<TransaksiS> {
       elevation: 5, // Adjust the elevation as needed
       color: Colour.primary,
       shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15.0),
-            ),
+        borderRadius: BorderRadius.circular(15.0),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Align(
@@ -115,71 +115,71 @@ class _TransaksiSState extends State<TransaksiS> {
     );
   }
 
- Widget _buildTransactionDetails(NumberFormat currencyFormatter) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        "Rincian Pembelian",
-        style: TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
+  Widget _buildTransactionDetails(NumberFormat currencyFormatter) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Rincian Pembelian",
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
-      ),
-      SizedBox(height: 15),
-      FutureBuilder<Transaksi>(
-        future: _fetchTransaksiData(int.parse(widget.transactionId)),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return Center(child: Text('No data available'));
-          }
+        SizedBox(height: 15),
+        FutureBuilder<Transaksi>(
+          future: _fetchTransaksiData(int.parse(widget.transactionId)),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData) {
+              return Center(child: Text('No data available'));
+            }
 
-          Transaksi transaksi = snapshot.data!;
+            Transaksi transaksi = snapshot.data!;
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildDetailRow("No. Struk", "${transaksi.nomor_unik}"),
-              _buildDetailRow("Nama Pembeli", "${transaksi.nama_pelanggan}"),
-              _buildDetailRow(
-                "Total Harga",
-                currencyFormatter.format(transaksi.total_belanja),
-              ),
-              _buildDetailRow(
-                "Uang Bayar",
-                currencyFormatter.format(transaksi.uang_bayar),
-              ),
-              _buildDetailRow(
-                "Uang Kembali",
-                currencyFormatter.format(transaksi.uang_kembali),
-              ),
-                Text(
-                "Transaction Items:", // Additional text here
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDetailRow("No. Struk", "${transaksi.nomor_unik}"),
+                _buildDetailRow("Nama Pembeli", "${transaksi.nama_pelanggan}"),
+                _buildDetailRow(
+                  "Total Harga",
+                  currencyFormatter.format(transaksi.total_belanja),
                 ),
-              ),
-              Column(
-                children: transaksi.items.map((item) => buildProductDetailRow(item)).toList(),
-              ),               
-              
-            ],
-          );
-        },
-      ),
-    ],
-  );
-}
-
+                _buildDetailRow(
+                  "Uang Bayar",
+                  currencyFormatter.format(transaksi.uang_bayar),
+                ),
+                _buildDetailRow(
+                  "Uang Kembali",
+                  currencyFormatter.format(transaksi.uang_kembali),
+                ),
+                Text(
+                  "Transaction Items:", // Additional text here
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                Column(
+                  children: transaksi.items
+                      .map((item) => buildProductDetailRow(item))
+                      .toList(),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
@@ -216,7 +216,7 @@ class _TransaksiSState extends State<TransaksiS> {
       children: [
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            primary: Colors.black,
+            backgroundColor: Colors.black,
             padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
           ),
           onPressed: () async {
@@ -234,7 +234,7 @@ class _TransaksiSState extends State<TransaksiS> {
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            primary: Colour.primary,
+            backgroundColor: Colour.primary,
             padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
           ),
           onPressed: () {
@@ -255,65 +255,69 @@ class _TransaksiSState extends State<TransaksiS> {
   }
 
   Future<void> _printReceipt(NumberFormat currencyFormatter) async {
-  try {
-    Transaksi transaksi = await _fetchTransaksiData(int.parse(widget.transactionId));
-    EmsPdfService emspdfservice = EmsPdfService();
+    try {
+      Transaksi transaksi =
+          await _fetchTransaksiData(int.parse(widget.transactionId));
+      EmsPdfService emspdfservice = EmsPdfService();
 
-    String transactionItems = transaksi.items.map((item) =>
-      '${item.nama_produk} = ${item.qty} x ${currencyFormatter.format(item.harga_produk)}'
-    ).join('\n');
-    
-    String qty = transaksi.items.map((item) =>
-      '${currencyFormatter.format(item.totalProduk)}'
-    ).join('\n');
-    final data = await emspdfservice.generateEMSPDF(
-  "${transaksi.nomor_unik}",
-   DateTime.now().toString(), // Assuming the transaction number is of String type
-  "${transaksi.nama_pelanggan}",
-  transactionItems, // Pass the prepared transaction items as a String
-  qty, // Pass the prepared transaction items as a String
-  currencyFormatter.format(transaksi.total_belanja),
-  currencyFormatter.format(transaksi.uang_bayar),
-  currencyFormatter.format(transaksi.uang_kembali),
-);
-    // Save the PDF file
-    await emspdfservice.savePdfFile("Struk", data);
-    Get.snackbar('Success', 'Struk Behasil!!',
-        snackPosition: SnackPosition.TOP);
-  } catch (e) {
-    print('Error: $e');
-    Get.snackbar('Error', 'Failed to save Struk',
-        snackPosition: SnackPosition.TOP);
+      String transactionDate =
+          DateFormat('MMMM dd, yyyy').format(DateTime.now());
+
+      String transactionItems = transaksi.items
+          .map((item) =>
+              '${item.nama_produk} = ${item.qty} x ${currencyFormatter.format(item.harga_produk)}')
+          .join('\n');
+
+      String qty = transaksi.items
+          .map((item) => '${currencyFormatter.format(item.totalProduk)}')
+          .join('\n');
+      final data = await emspdfservice.generateEMSPDF(
+        "${transaksi.nomor_unik}",
+        transactionDate, // Assuming the transaction number is of String type
+        "${transaksi.nama_pelanggan}",
+        transactionItems, // Pass the prepared transaction items as a String
+        qty, // Pass the prepared transaction items as a String
+        currencyFormatter.format(transaksi.total_belanja),
+        currencyFormatter.format(transaksi.uang_bayar),
+        currencyFormatter.format(transaksi.uang_kembali),
+      );
+      // Save the PDF file
+      await emspdfservice.savePdfFile("Struk", data);
+      Get.snackbar('Success', 'Struk Behasil!!',
+          snackPosition: SnackPosition.TOP);
+    } catch (e) {
+      print('Error: $e');
+      Get.snackbar('Error', 'Failed to save Struk',
+          snackPosition: SnackPosition.TOP);
+    }
   }
-}
 
-
-Widget buildProductDetailRow(TransactionItem item) {
-  final currencyFormatter =
-      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ');
-  return Container(
-    margin: EdgeInsets.symmetric(vertical: 5),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          '${item.nama_produk} x ${item.qty}',
-          style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey),
-        ),
-        Text(
-          '${currencyFormatter.format(item.totalProduk)}',
-          style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey),
-        ),
-      ],
-    ),
-  );
-}
+  Widget buildProductDetailRow(TransactionItem item) {
+    final currencyFormatter =
+        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ');
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '${item.nama_produk} x ${item.qty}',
+            style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey),
+          ),
+          Text(
+            '${currencyFormatter.format(item.totalProduk)}',
+            style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
 }

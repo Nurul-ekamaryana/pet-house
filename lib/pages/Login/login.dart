@@ -34,8 +34,7 @@ class _LoginPageState extends State<LoginPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Image(
-              image: AssetImage(
-                  'images/undraw_welcome_cats_thqn-removebg-preview.png'),
+              image: AssetImage('images/Cat and dog-bro.png'),
               height: 160,
             ),
             SizedBox(height: 20),
@@ -48,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             Text(
-              "Login here",
+              "Login here!",
               style: TextStyle(
                 fontSize: 18,
                 color: Color.fromARGB(204, 118, 134, 224),
@@ -57,9 +56,9 @@ class _LoginPageState extends State<LoginPage> {
             ),
             SizedBox(height: 20),
             Text(
-              "Username :",
+              "Username:",
               style: TextStyle(
-                color: Colour.primary,
+                color: Colors.red,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -69,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
               decoration: InputDecoration(
                 hintText: 'Ex: Nurul Eka',
                 filled: true,
-                fillColor: const Color.fromARGB(88, 170, 197, 180),
+                fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
@@ -91,14 +90,15 @@ class _LoginPageState extends State<LoginPage> {
               decoration: InputDecoration(
                 suffixIcon: IconButton(
                   onPressed: () {
-                    togglePasswordVisibility();
+                    togglePassword();
                   },
-                  icon: Icon(
-                      _isObscure ? Icons.visibility : Icons.visibility_off),
+                  icon: Icon(_isObscure
+                      ? Icons.visibility
+                      : Icons.visibility_off_outlined),
                 ),
                 hintText: 'Ex: Ah%T&8#',
                 filled: true,
-                fillColor: const Color.fromARGB(88, 170, 197, 180),
+                fillColor: Color.fromARGB(255, 255, 255, 255),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none),
@@ -109,9 +109,10 @@ class _LoginPageState extends State<LoginPage> {
               alignment: Alignment.centerRight, // Align to the right
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: Colour.primary,
-                  padding: EdgeInsets.symmetric(vertical: 18, horizontal: 60),
-                ),
+                    backgroundColor: Colour.primary,
+                    padding: EdgeInsets.symmetric(vertical: 0, horizontal: 34),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero)),
                 onPressed: () {
                   String username = usernameController.text.trim();
                   String password = passwordController.text.trim();
@@ -137,6 +138,15 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  void togglePassword() {
+    setState(() {
+      _isObscure = !_isObscure;
+    });
+    // Update text to toggle visibility
+    passwordController.selection =
+        TextSelection.collapsed(offset: passwordController.text.length);
   }
 
   // Future<void> _addLog(String message) async {

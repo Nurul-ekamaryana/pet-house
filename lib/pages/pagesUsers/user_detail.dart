@@ -16,6 +16,7 @@ class _UserDetailState extends State<UserDetail> {
   final UsersController _UsersController = Get.put(UsersController());
   final TextEditingController nameController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   final LogController logController = LogController();
 
   String? _selectedRole;
@@ -46,11 +47,14 @@ class _UserDetailState extends State<UserDetail> {
     final String id = args?['id'] ?? '';
     final String name = args?['nama'] ?? '';
     final String username = args?['username'] ?? '';
+    final String password = args?['password'] ?? '';
 
     nameController.text = name;
     usernameController.text = username;
+    passwordController.text = password;
 
     return Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colour.primary,
@@ -120,7 +124,7 @@ class _UserDetailState extends State<UserDetail> {
               TextField(
                 controller: usernameController,
                 decoration: InputDecoration(
-                  hintText: 'Exm. Renaldi Nurmazid',
+                  hintText: 'Exm. Nurul eka',
                   label: Text(
                     'Username',
                     style: TextStyle(
@@ -184,7 +188,7 @@ class _UserDetailState extends State<UserDetail> {
                             _UsersController.updateUser(userId, _selectedRole!,
                                 name, username, updated_at);
                             Get.back();
-                            _addLog('Updated user');
+                            _addLog('Mengupdate User');
                           } else {
                             Get.snackbar('Error', 'Please fill all fields');
                           }
@@ -230,6 +234,7 @@ class _UserDetailState extends State<UserDetail> {
                           if (success) {
                             Get.back(); // Kembali ke halaman produk
                             Get.snackbar('Success', 'Berhasil delete');
+                            _addLog('menghapus users');
                           } else {
                             Get.snackbar(
                                 'Failed', 'Failed to delete transaction');
@@ -252,6 +257,7 @@ class _UserDetailState extends State<UserDetail> {
                           String userId =
                               id; // Assuming id is the correct user ID
                           Get.to(() => UserPassword(userId: userId));
+                          _addLog('mengganti password users');
                         },
                         child: Text(
                           "Password",

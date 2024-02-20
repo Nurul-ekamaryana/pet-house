@@ -126,42 +126,57 @@ class _UserPageState extends State<UsersPage> {
                 final List<QueryDocumentSnapshot<Object?>> users =
                     snapshot.data!.docs;
 
-                final filteredProducts = searchQuery.isEmpty
+                final filteredUsers = searchQuery.isEmpty
                     ? users
                     : users.where((users) {
                         final nama =
                             users['nama'].toString().toLowerCase();
                         final role =
                             users['role'].toString().toLowerCase();
-                        return nama.contains(searchQuery) || role.contains(searchQuery);
+                        final password =
+                            users['password'].toString().toLowerCase();
+                        return nama.contains(searchQuery) || role.contains(searchQuery) || password.contains(searchQuery);
                       }).toList();
-                if (filteredProducts.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'Produk tidak ditemukan',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.bold,
+                if (filteredUsers.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image(
+                            image: AssetImage('images/404 Error with a cute animal-bro.png'),
+                            height: 181,
+                          ),
+                          // SizedBox(height: 20),
+                          // Text(
+                          //   'Transaksi tidak ditemukan',
+                          //   style: TextStyle(
+                          //     fontSize: 18,
+                          //     fontFamily: 'Poppins',
+                          //     fontWeight: FontWeight.bold,
+                          //   ),
+                          // ),
+                        ],
                       ),
-                    ),
-                  );
-                }
+                    );
+                  }
+
 
                 return ListView.builder(
-                  itemCount: filteredProducts.length,
+                  itemCount: filteredUsers.length,
                   itemBuilder: (context, index) {
                     var usersData =
-                        filteredProducts[index].data() as Map<String, dynamic>;
+                        filteredUsers[index].data() as Map<String, dynamic>;
                     String namaUsers = usersData['nama'];
                     String namaUsername = usersData['username'];
                     String roleUsers = usersData['role'];
+                    String password = usersData['password'];
                     
                     return GestureDetector(
                       onTap: () {
                         Get.to(() => UserDetail(), arguments: {
-                          'id': filteredProducts[index].id,
+                          'id': filteredUsers[index].id,
                           'nama': namaUsers,
+                          'password': password,
                           'username': namaUsername,
                           'role': roleUsers,
                         });
@@ -215,10 +230,11 @@ class _UserPageState extends State<UsersPage> {
                                     ),
                                     onTap: () {
                                       Get.to(() => UserDetail(), arguments: {
-                                   'id': filteredProducts[index].id,
-                              'nama': namaUsers,
-                              'username': namaUsername,
-                              'role': roleUsers,
+                                   'id': filteredUsers[index].id,
+                                    'nama': namaUsers,
+                                    'username': namaUsername,
+                                    'password': password,
+                                    'role': roleUsers,
                                       });
                                     },
                                   ),

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:e_petshop/controller/logController.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -18,6 +19,7 @@ class EmsPdfService {
     String uangKembali,
   ) async {
     final pdf = pw.Document();
+    final LogController _logController = LogController();
 
     pdf.addPage(
       pw.Page(
@@ -129,7 +131,6 @@ class EmsPdfService {
                   ],
                 ),
               ),
-              
               pw.SizedBox(
                 height: 20,
               ),
@@ -209,7 +210,15 @@ class EmsPdfService {
         },
       ),
     );
-
+    void _addLog(String activity) {
+      try {
+        _logController.addLog(activity);
+        print('Log added successfully!');
+      } catch (e) {
+        print('Failed to add log: $e');
+      }
+    }
+ _addLog("Mencetak transaksi");
     return pdf.save();
   }
 

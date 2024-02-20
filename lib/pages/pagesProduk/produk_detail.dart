@@ -177,7 +177,7 @@ class ProdukDetail extends StatelessWidget {
                           );
                           _produkController.shouldUpdate.value = true;
                           Get.back();
-                          _addLog("Updated Produk");
+                          _addLog("Mengupdate Produk");
                           Get.snackbar(
                               'Success', 'produk updated successfully!');
                         } else {
@@ -204,16 +204,16 @@ class ProdukDetail extends StatelessWidget {
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context)
-                                      .pop(true); // User confirms deletion
+                                      .pop(false); // User confirms deletion
                                 },
-                                child: Text("Ya"),
+                                child: Text("Tidak"),
                               ),
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context)
-                                      .pop(false); // User cancels deletion
+                                      .pop(true); // User cancels deletion
                                 },
-                                child: Text("Tidak"),
+                                child: Text("Ya"),
                               ),
                             ],
                           );

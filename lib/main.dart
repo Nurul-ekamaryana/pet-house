@@ -2,6 +2,7 @@ import 'package:e_petshop/controller/logController.dart';
 import 'package:e_petshop/controller/produkController.dart';
 import 'package:e_petshop/controller/transaksiController.dart';
 import 'package:e_petshop/controller/usersContoller.dart';
+import 'package:e_petshop/model.dart/users.dart';
 import 'package:e_petshop/pages/Login/login.dart';
 import 'package:e_petshop/pages/pageLog/log.dart';
 import 'package:e_petshop/pages/pagesProduk/produk.dart';
@@ -58,12 +59,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final UsersController _usersController = Get.find<UsersController>();
-  final TransaksiController _transaksiController = Get.put(TransaksiController());
+  final TransaksiController _transaksiController =
+      Get.put(TransaksiController());
   final ProdukController _produkController = Get.put(ProdukController());
   final LogController _logController = Get.put(LogController());
 
   @override
   Widget build(BuildContext context) {
+    UserRole currentUserRole = _usersController.getCurrentUserRole();
+    String role = _usersController.userRole.value.toString().split('.').last;
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -73,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Row(
             children: [
               Text(
-                'PET HOUSE',
+              "Welcome: ${_usersController.userName}, ${role}",
                 style: TextStyle(
                   fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
@@ -100,10 +104,21 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Center(
                 child: Container(
-                  height: 160,
-                  child: Image(
-                    image: AssetImage(
-                        'images/undraw_playing_fetch_cm19-removebg-preview.png'),
+                  height: 200,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('images/ForD.png'),
+                      fit: BoxFit.cover,
+                    ),
+                    borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 5,
+                        blurRadius: 8,
+                        offset: Offset(0, 3), // changes position of shadow
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -184,28 +199,28 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                 ),
               SizedBox(height: 16),
-            if (_usersController.getCurrentUserRole() == UserRole.Admin)
-              FutureBuilder<int>(
-                future: _logController.countLog(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else {
-                    int produkCount = snapshot.data ?? 0;
-                    return buildProductTile(
-                      title: "History",
-                      subtitle: produkCount.toString(),
-                      icon: Icons.history,
-                      iconColor: Colour.primary,
-                      onTap: () {
-                        Get.offNamed('/log');
-                      },
-                    );
-                  }
-                },
-              ),
+              if (_usersController.getCurrentUserRole() == UserRole.Owner)
+                FutureBuilder<int>(
+                  future: _logController.countLog(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else {
+                      int produkCount = snapshot.data ?? 0;
+                      return buildProductTile(
+                        title: "History",
+                        subtitle: produkCount.toString(),
+                        icon: Icons.history,
+                        iconColor: Colour.primary,
+                        onTap: () {
+                          Get.offNamed('/log');
+                        },
+                      );
+                    }
+                  },
+                ),
             ],
           ),
         ),

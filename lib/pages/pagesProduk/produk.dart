@@ -137,17 +137,28 @@ class _ProdukPageState extends State<ProdukPage> {
                         return nama.contains(searchQuery) || harga.contains(searchQuery);
                       }).toList();
                 if (filteredProducts.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'Produk tidak ditemukan',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.bold,
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image(
+                            image: AssetImage('images/404 Error with a cute animal-bro.png'),
+                            height: 181,
+                          ),
+                          // SizedBox(height: 20),
+                          // Text(
+                          //   'Transaksi tidak ditemukan',
+                          //   style: TextStyle(
+                          //     fontSize: 18,
+                          //     fontFamily: 'Poppins',
+                          //     fontWeight: FontWeight.bold,
+                          //   ),
+                          // ),
+                        ],
                       ),
-                    ),
-                  );
-                }
+                    );
+                  }
+
 
                 return ListView.builder(
                   itemCount: filteredProducts.length,

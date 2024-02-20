@@ -38,8 +38,6 @@ class ProdukController extends GetxController {
     try {
       await _firestore.collection('products').doc(id).update({
         'nama_produk': newNamaProduk,
-        // 'jenis': newJenis,
-        // 'ciri_has': newCiriHas,
         'harga_produk': newHargaProduk,
         'updated_at': updated_at,
       });

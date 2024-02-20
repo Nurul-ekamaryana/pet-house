@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:e_petshop/controller/logController.dart';
 import 'package:e_petshop/controller/transaksiController.dart';
 import 'package:e_petshop/model.dart/TransaksiItem.dart';
@@ -112,7 +113,7 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
         leading: IconButton(
           color: Colour.secondary,
           onPressed: () {
-            Get.offNamed('/home');
+            Get.offNamed('/transaksi');
           },
           icon: Icon(Icons.arrow_back),
         ),
@@ -170,83 +171,104 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
               SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
-                  color: Colour.secondary,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 width: double.infinity,
                 padding: EdgeInsets.all(10),
-                height: 50,
-                child: DropdownButton<String>(
-                  hint: Text('Pilih Produk'),
-                  value: _selectedProduct,
+                height: 60,
+                child: DropdownSearch<String>(
+                  popupProps: PopupProps.menu(
+                    showSearchBox: true,
+                    searchDelay: Duration(milliseconds: 500),
+                    showSelectedItems: true,
+                    containerBuilder: (context, popupWidget) => Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: popupWidget,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colour.secondary,
+                      ),
+                    ),
+                    searchFieldProps: TextFieldProps(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                  items: produkList,
+                  itemAsString: (String? item) => item ?? '',
+                  dropdownDecoratorProps: DropDownDecoratorProps(
+                    dropdownSearchDecoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
                   onChanged: (String? newValue) {
                     setState(() {
                       _selectedProduct = newValue;
                       fetchProdukHarga(newValue);
-                      _selectedProductChanged(_selectedProduct, _qty);
                     });
                   },
-                  items: produkList.map<DropdownMenuItem<String>>(
-                    (String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    },
-                  ).toList(),
+                  selectedItem: _selectedProduct,
                 ),
               ),
               SizedBox(height: 20),
-              TextField(
-                controller: _hargaProdukController,
-                enabled: false,
-                decoration: InputDecoration(
-                  hintText: 'Exm. Rp. 100.000',
-                  label: Text(
-                    'Harga Produk',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      fontFamily: 'Poppins',
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Harga Produk',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        TextField(
+                          controller: _hargaProdukController,
+                          enabled: false,
+                          decoration: InputDecoration(
+                            filled: true,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  filled: true,
-                  fillColor: Colour.secondary,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: _qtyController,
-                onChanged: (String newValue) {
-                  setState(() {
-                    _qty = int.tryParse(newValue) ?? 0;
-                    _selectedProductChanged(_selectedProduct, _qty);
-                  });
-                },
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  hintText: 'Exm. 50',
-                  label: Text(
-                    'QTY',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      fontFamily: 'Poppins',
+                  SizedBox(width: 20),
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'QTY',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        TextField(
+                          controller: _qtyController,
+                          onChanged: (String newValue) {
+                            setState(() {
+                              _qty = int.tryParse(newValue) ?? 0;
+                              _selectedProductChanged(_selectedProduct, _qty);
+                            });
+                          },
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            filled: true,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  filled: true,
-                  fillColor: Colour.secondary,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+                ],
               ),
               selectedProducts.isNotEmpty
                   ? Container(
@@ -396,7 +418,7 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                           updatedat,
                         );
 
-                        _addLog("Transaksi updated");
+                        _addLog("Mengupdate Transaksi");
                         Get.back();
                         Get.snackbar(
                             'Success', 'Transaction updated successfully!');
@@ -442,8 +464,7 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
                         Get.back();
                         Get.snackbar(
                             'Success', 'Transaction deleted successfully!');
-                        _addLog("Menhapus Transaksi");
-                      } else {
+                        _addLog("Menghapus Transaksi");
                         Get.snackbar('Failed', 'Failed to delete transaction');
                       }
                     },
@@ -468,23 +489,28 @@ class _TransaksiDetailState extends State<TransaksiDetail> {
     try {
       Transaksi transaksi = await _fetchTransaksiData(widget.nomorUnik);
       EmsPdfService emspdfservice = EmsPdfService();
-      double uang_bayar = double.tryParse(_uangBayarController.text.replaceAll(RegExp('[^0-9]'), '')) ?? 0;
+      double uang_bayar = double.tryParse(
+              _uangBayarController.text.replaceAll(RegExp('[^0-9]'), '')) ??
+          0;
       // Buat list of strings untuk menyimpan data transaksi yang akan ditampilkan di PDF
       List<String> transactionItems = selectedProducts
           .map((item) =>
               '${item.nama_produk} = ${item.qty} x ${currencyFormatter.format(item.harga_produk)}')
           .toList();
 
+      String transactionDate =
+          DateFormat('MMMM dd, yyyy').format(DateTime.now());
+
       // Buat list of strings untuk menyimpan jumlah dari setiap produk
       List<String> totalProduk = selectedProducts
           .map((item) => '${currencyFormatter.format(item.totalProduk)}')
           .toList();
-          
+
       double uangKembali = uang_bayar - _totalBelanja;
       // Generate PDF dengan data yang sudah disiapkan
       final data = await emspdfservice.generateEMSPDF(
         "${transaksi.nomor_unik}",
-        DateTime.now().toString(),
+        transactionDate,
         _namaPembeliController.text,
         transactionItems.join('\n'),
         totalProduk.join('\n'),

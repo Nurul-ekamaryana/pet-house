@@ -1,4 +1,5 @@
 import 'package:e_petshop/controller/usersContoller.dart';
+import 'package:e_petshop/pages/pagesUsers/user_detail.dart';
 import 'package:e_petshop/theme/color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -84,20 +85,24 @@ class _UserPasswordState extends State<UserPassword> {
                     onPressed: () {
                       String newPassword = passwordController.text.trim();
                       String confirmNewPassword = confirmController.text.trim();
-
                       if (newPassword.isNotEmpty &&
                           confirmNewPassword.isNotEmpty) {
                         if (newPassword == confirmNewPassword) {
                           _usersController.updatePassword(
                               widget.userId, newPassword, confirmNewPassword);
+                          Get.back();
                         } else {
-                          print('Passwords do not match');
+                          Get.snackbar(
+                            'Password Gagal',
+                            'Ganti Pasword gagal silahkan coba lagi',
+                          );
                         }
                       } else {
-                        print('Please fill in all fields correctly');
+                        Get.snackbar(
+                          'Password Gagal',
+                          'Ganti Pasword gagal silahkan coba lagi',
+                        );
                       }
-
-                      Get.back();
                     },
                     child: Text(
                       "Submit",

@@ -12,7 +12,6 @@ class LogController {
   Future<void> addLog(String activity) async {
     try {
       String username = _usersController.userName.value;
-
       await logsCollection.add({
         'activity': activity,
         'created_at': DateTime.now().toString(),

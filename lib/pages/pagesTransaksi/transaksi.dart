@@ -215,6 +215,7 @@ class _TransaksiPageState extends State<TransaksiPage> {
 
     return Scaffold(
       backgroundColor: Colour.b,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Colour.primary,
         toolbarHeight: 120,
@@ -350,95 +351,111 @@ class _TransaksiPageState extends State<TransaksiPage> {
 
                   if (filteredTransaksi.isEmpty) {
                     return Center(
-                      child: Text(
-                        'Transaksi tidak ditemukan',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image(
+                            image: AssetImage(
+                                'images/404 Error with a cute animal-bro.png'),
+                            height: 133,
+                          ),
+                          // SizedBox(height: 20),
+                          // Text(
+                          //   'Transaksi tidak ditemukan',
+                          //   style: TextStyle(
+                          //     fontSize: 18,
+                          //     fontFamily: 'Poppins',
+                          //     fontWeight: FontWeight.bold,
+                          //   ),
+                          // ),
+                        ],
                       ),
                     );
                   }
-                  return ListView.builder(
-                    itemCount: filteredTransaksi.length,
-                    itemBuilder: (context, index) {
-                      var transaksiData = filteredTransaksi[index].data()
-                          as Map<String, dynamic>;
-                      String namaPembeli = transaksiData['nama_pelanggan'];
-                      String tanggal = transaksiData['updated_at'] as String;
-                      String formattedDate = '';
-                      if (tanggal != null) {
-                        DateTime dateTime = DateTime.parse(tanggal);
-                        formattedDate = DateFormat('MMMM dd, yyyy').format(dateTime);
-                      }
-                      return Card(
-                        margin:
-                            EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-                        color: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                height: 90, // Adjust height as needed
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(5),
-                                  color:
-                                      Colour.primary, // Adjust color as needed
-                                ),
-                                padding: EdgeInsets.all(8),
-                              ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 10.0, vertical: 13.0),
-                                  title: Text(
-                                    namaPembeli,
-                                    style: TextStyle(
-                                      fontSize: 18.0,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    "$formattedDate",
-                                    style: TextStyle(
-                                      fontSize: 14.0,
-                                      color:
-                                          const Color.fromARGB(255, 88, 88, 88),
-                                    ),
-                                  ),
-                                  trailing: currentUserRole == UserRole.Admin
-                                      ? CircleAvatar(
-                                          child: Icon(
-                                            Icons.edit,
-                                            color: Colour.primary,
-                                            size: 28.0,
-                                          ),
-                                        )
-                                      : null,
-                                  onTap: () {
-                                    if (currentUserRole == UserRole.Admin) {
-                                      int nomorUnik =
-                                          transaksiData['nomor_unik'] as int ??
-                                              0;
-                                      Get.to(() => TransaksiDetail(
-                                            nomorUnik: nomorUnik,
-                                          ));
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
+
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: filteredTransaksi.length,
+                      itemBuilder: (context, index) {
+                        var transaksiData = filteredTransaksi[index].data()
+                            as Map<String, dynamic>;
+                        String namaPembeli = transaksiData['nama_pelanggan'];
+                        String tanggal = transaksiData['updated_at'] as String;
+                        String formattedDate = '';
+                        if (tanggal != null) {
+                          DateTime dateTime = DateTime.parse(tanggal);
+                          formattedDate =
+                              DateFormat('MMMM dd, yyyy').format(dateTime);
+                        }
+                        return Card(
+                          margin:
+                              EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.0),
                           ),
-                        ),
-                      );
-                    },
+                          child: Padding(
+                            padding: const EdgeInsets.all(0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  height: 90, // Adjust height as needed
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    color: Colour
+                                        .primary, // Adjust color as needed
+                                  ),
+                                  padding: EdgeInsets.all(8),
+                                ),
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: ListTile(
+                                    contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 10.0, vertical: 13.0),
+                                    title: Text(
+                                      namaPembeli,
+                                      style: TextStyle(
+                                        fontSize: 18.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      "$formattedDate",
+                                      style: TextStyle(
+                                        fontSize: 14.0,
+                                        color: const Color.fromARGB(
+                                            255, 88, 88, 88),
+                                      ),
+                                    ),
+                                    trailing: currentUserRole == UserRole.Admin
+                                        ? CircleAvatar(
+                                            child: Icon(
+                                              Icons.edit,
+                                              color: Colour.primary,
+                                              size: 28.0,
+                                            ),
+                                          )
+                                        : null,
+                                    onTap: () {
+                                      if (currentUserRole == UserRole.Admin) {
+                                        int nomorUnik =
+                                            transaksiData['nomor_unik']
+                                                    as int ??
+                                                0;
+                                        Get.to(() => TransaksiDetail(
+                                              nomorUnik: nomorUnik,
+                                            ));
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   );
                 },
               ),
